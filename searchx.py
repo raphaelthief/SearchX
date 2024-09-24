@@ -1,11 +1,5 @@
 # Of course, you're not going to use this tool to sift through ransomware leaks or any other crap. Don't be stupid and respect the law !
-import os
-import re
-import argparse
-import json
-import requests
-import urllib3
-import sys
+import os, re, argparse, json, requests, urllib3, sys
 
 # Check dependencies
 import subprocess
@@ -29,8 +23,8 @@ from Dependencies.ipinfos import ipinfo
 from Dependencies.leakx import leakXx
 from Dependencies.shodan import shodanit
 from Dependencies.virustotal import check_ip_with_virustotal
-
-
+from Dependencies.exploitfinder import initexploitdb, initialize_dorksdb, dorksearch
+from Dependencies.whatweb import getwatweb
 
 # colorama
 from colorama import init, Fore, Style
@@ -216,6 +210,8 @@ def main():
     parser.add_argument('--username',  help='search username (blackbird)')
     parser.add_argument('--name',  help='search first and last name (--lastname needed)')
     parser.add_argument('--lastname',  help='search first and last name (--name needed)')
+    parser.add_argument('--exploit', nargs='*', help='Search for vulnerabilities (--exploit "description" "CVE" "port_number" : --exploit "eternalblue" OR --exploit "eternalblue" "" "445")')
+    parser.add_argument('--dorks',  help='Search for Google Dorks (--dorks "index off")')
     parser.add_argument('-p', '--password',  help='check how many times this password has been leaked (breachdirectory)')
     parser.add_argument("-r", "--root", help="Root directory path to explore")#, required=True) # aesthetic bug fix
     parser.add_argument("-k", "--keywords", help="Keywords to search for in file names (separated by commas)")
@@ -232,7 +228,8 @@ def main():
     args = parser.parse_args()
 
 
-    keywords = args.keywords.split(",") if args.keywords else None 
+    keywords = args.keywords.split(",") if args.keywords else None
+
 
 
     if len(sys.argv) == 1:
@@ -261,12 +258,7 @@ def main():
 
     output_file = None
     if args.output:
-        
         sys.stdout = TeeOutput(args.output)
-
-        
-        #output_file = open(args.output, "w", encoding="utf-8")
-        #output_file.write(args.root + "\n") 
 
 
     if args.skype:
@@ -323,7 +315,7 @@ def main():
 
     if args.phone:
         basicinfos(args.phone)
-        print(f"{Fore.YELLOW}----- Launching ignorant : {Fore.GREEN}https://github.com/megadose/ignorant{Fore.YELLOW} -----") # A refaire en individuel
+        print(f"{Fore.YELLOW}----- Launching ignorant : {Fore.GREEN}https://github.com/megadose/ignorant{Fore.YELLOW} -----") # Bug
         print(f"[!] Checking dependencies ...")
         check_ignorant(args.phone)
         print(f"\n{Fore.YELLOW}----- Launching haveibeenzuckered.com api : {Fore.GREEN}https://haveibeenzuckered.com/{Fore.YELLOW} -----")
@@ -336,17 +328,35 @@ def main():
         shodanit(args.ip)
         check_ip_with_virustotal(args.ip, 'Tokens/virustotal_token.txt')
         leakXx(args.ip)
+        getwatweb(args.ip)
+        
         print(f"\n{Fore.YELLOW}[!] Urls to visit")
         print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
         
         
     if args.subdomain:
         subreponse(args.subdomain)
+        getwatweb(args.subdomain)
         
+    search_term, cve, port = None, None, None
+    if args.exploit is not None:
+        print(f"{Fore.YELLOW}----- Exploitdb from : {Fore.GREEN}https://www.exploit-db.com/{Fore.YELLOW} -----{Fore.GREEN}")
+        if len(args.exploit) > 0:
+            search_term = args.exploit[0]
+        if len(args.exploit) > 1:
+            cve = args.exploit[1]
+        if len(args.exploit) > 2:
+            port = args.exploit[2]
 
-        
-
-        
+        initexploitdb(search_term, cve, port)
+    
+    
+    if args.dorks:
+        initialize_dorksdb()
+        dorksearch(args.dorks)
+    
+    
+    
         
     # Filters management
     ignored_extensions = None
@@ -370,7 +380,6 @@ def main():
 
             
     if output_file:
-        #output_file.close() # Closing output end instruction
         sys.stdout.close()
 
         
