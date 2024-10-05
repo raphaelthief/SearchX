@@ -92,9 +92,6 @@ def git_pull():
 
         os.chdir(repo_path)
         print(f"Git repository found: {repo_path}")
-        
-        current_os = platform.system()
-        print(f"Detected OS: {current_os}")
 
         command = ["git", "pull", "origin", "main"]
         result = subprocess.run(command, capture_output=True, text=True)
