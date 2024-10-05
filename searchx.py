@@ -99,6 +99,10 @@ def git_pull():
         if result.returncode == 0:
             print(f"{Fore.YELLOW}[!] Done{Fore.GREEN}")
             print(result.stdout)
+            # Check if the output indicates that changes were pulled
+            if "Already up to date" not in result.stdout:
+                print(f"{Fore.YELLOW}[!] Changes detected, restarting the script...{Fore.RESET}")
+                os.execv(sys.executable, ['python'] + sys.argv)
         else:
             print(f"{Fore.RED}[!] Error :{Fore.GREEN}")
             print(result.stderr)
