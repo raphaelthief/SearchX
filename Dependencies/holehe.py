@@ -11,18 +11,21 @@ except:
   
   
 def check_holehe(email):
-    if os.path.isdir("holehe"):
+    try:
+        import holehe
         print(f"{Fore.YELLOW}Done. Launching holehe ...")
         holehez(email)
-    else:
-        print(f"{Fore.YELLOW}[!] Downloading depedencies (holehe) ...{Fore.GREEN}")
-        command = ['git', 'clone', 'https://github.com/megadose/holehe.git']
-        result = subprocess.run(command, capture_output=True, text=True)
+    except ImportError:
+        print(f"{Fore.YELLOW}[!] holehe not found. Installing holehe ...{Fore.GREEN}")
+        
+        with open(os.devnull, 'wb') as hide_output:
+            result = subprocess.run(["pip", "install", "holehe"], stdout=hide_output, stderr=hide_output)
+        
         if result.returncode == 0:
             print(f"{Fore.YELLOW}Done. Launching holehe ...")
             holehez(email)
         else:
-            print(f"{Fore.RED}Error : {result.stderr}")
+            print(f"{Fore.RED}Error: Failed to install holehe.")
 
 
 def import_submodules(package, recursive=True):

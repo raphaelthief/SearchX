@@ -11,6 +11,7 @@ headers = None
 
 def githubusername(uname):
     token_file_path = 'Tokens/github_token.txt'
+    global token, headers
     if os.path.exists(token_file_path):
         with open(token_file_path, 'r') as file:
             token_content = file.read().strip()
@@ -19,7 +20,6 @@ def githubusername(uname):
     headers = {"Authorization": f"token {token}"} if token else {}
     
     check_rate_limit(uname, headers)
-
 
 
 def check_rate_limit(uname, headers):
@@ -33,11 +33,10 @@ def check_rate_limit(uname, headers):
         pass
         
     elif remaining_requests > 0:
-        general(uname)
-        repos(uname)
+        general(uname, headers)
+        repos(uname, headers)
     
-    
-    
+
 def general(uname, headers):
     url = f"https://api.github.com/users/{uname}"
     response = requests.get(url, headers=headers)
@@ -45,7 +44,7 @@ def general(uname, headers):
     if response.status_code == 200:
         user_data = response.json()
         
-        if {user_data['name']} == 'API rate limit exceeded':
+        if user_data['name'] == 'API rate limit exceeded':
             pass
         
         print(f"\n{Fore.YELLOW}[!] Github infos")
@@ -63,12 +62,11 @@ def general(uname, headers):
 
 
 def get_repositories(uname, headers):
-    url = f"https://api.github.com/users/{username}/repos"
+    url = f"https://api.github.com/users/{uname}/repos"
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         return response.json()  
     else:
-        pass
         return []
 
 
@@ -78,7 +76,6 @@ def get_commits(username, repo_name, headers):
     if response.status_code == 200:
         return response.json()  
     else:
-        pass
         return []
 
 
@@ -95,7 +92,7 @@ def extract_emails_from_commits(commits):
 
 
 def repos(uname, headers):
-    repos = get_repositories(uname)
+    repos = get_repositories(uname, headers)
     all_emails = set()
     print("")
     
@@ -111,4 +108,3 @@ def repos(uname, headers):
     
     for email in all_emails:
         print(f"{Fore.GREEN}[+] " + email)
-    

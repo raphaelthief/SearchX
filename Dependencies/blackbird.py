@@ -6,14 +6,18 @@ from bs4 import BeautifulSoup
 init() # Init colorama
 
 
+base_dir = os.path.dirname(os.path.abspath(__file__))  # bug correct for wsl etc..
 
-file = open('Dependencies\\remake_blackbird\\data.json')
+file_path0 = os.path.join(base_dir, 'remake_blackbird', 'data.json') # bug correct for wsl etc..
+file = open(file_path0)#('Dependencies\\remake_blackbird\\data.json')
 searchData = json.load(file)
 
-file1 = open('Dependencies\\remake_blackbird\\data1.json')
+file_path1 = os.path.join(base_dir, 'remake_blackbird', 'data1.json') # bug correct for wsl etc..
+file1 = open(file_path1)#('Dependencies\\remake_blackbird\\data1.json')
 searchData1 = json.load(file1)
 
-file2 = open('Dependencies\\remake_blackbird\\data2.json')
+file_path2 = os.path.join(base_dir, 'remake_blackbird', 'data2.json') # bug correct for wsl etc..
+file2 = open(file_path2)#('Dependencies\\remake_blackbird\\data2.json')
 searchData2 = json.load(file2)
 
 
@@ -21,7 +25,9 @@ currentOs = sys.platform
 path = os.path.dirname(__file__)
 warnings.filterwarnings('ignore')
 
-useragents = open('Dependencies\\remake_blackbird\\useragents.txt').read().splitlines()
+
+file_path3 = os.path.join(base_dir, 'remake_blackbird', 'useragents.txt') # bug correct for wsl etc..
+useragents = open(file_path3).read().splitlines()#('Dependencies\\remake_blackbird\\useragents.txt').read().splitlines()
 proxy = None
 
 async def findUsername(username, interfaceType, flag_csv=False):
@@ -93,7 +99,6 @@ async def makeRequest(session, u, username, interfaceType, semaphore):
                             try:
                                 value = eval(d['value']).strip('\t\r\n')
                                 print(f"       |--{d['key']}: {value}")
-                                #tree.create_node(f"   |--{d['key']}: {value}",66677,parent=6667)
                    
                                 metadata.append({"type": d["type"], "key": d['key'], "value": value})
                             except Exception as e:

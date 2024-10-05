@@ -9,6 +9,7 @@ from Dependencies.holehe import check_holehe
 from Dependencies.ignorant import check_ignorant
 from Dependencies.phone_format import basicinfos
 from Dependencies.scamsearch import scam
+from Dependencies.ghunt import ghunter
 from Dependencies.fbleaked import leaked
 from Dependencies.leakcheck import leackcheck
 from Dependencies.proxynova import proxynova1
@@ -24,6 +25,7 @@ from Dependencies.leakx import leakXx
 from Dependencies.shodan import shodanit
 from Dependencies.virustotal import check_ip_with_virustotal
 from Dependencies.exploitfinder import initexploitdb, initialize_dorksdb, dorksearch
+from Dependencies.cvesearch import searchcve
 from Dependencies.whatweb import getwatweb
 
 # colorama
@@ -79,13 +81,42 @@ class TeeOutput:
         self.file.close()
 
 
+#====================================== Program update ======================================
+def git_pull():
+    try:
+        repo_path = os.getcwd()
+        
+        if not os.path.isdir(os.path.join(repo_path, ".git")):
+            print("The current directory is not a Git repository (no .git folder found).")
+            return
+
+        os.chdir(repo_path)
+        print(f"Git repository found: {repo_path}")
+        
+        current_os = platform.system()
+        print(f"Detected OS: {current_os}")
+
+        command = ["git", "pull", "origin", "main"]
+        result = subprocess.run(command, capture_output=True, text=True)
+
+        if result.returncode == 0:
+            print(f"{Fore.YELLOW}[!] Done{Fore.GREEN}")
+            print(result.stdout)
+        else:
+            print(f"{Fore.RED}[!] Error :{Fore.GREEN}")
+            print(result.stderr)
+
+    except Exception as e:
+        print(f"{Fore.RED}[!] Error : {Fore.GREEN}{e}")
+
 
 #====================================== Local Search ======================================
 def search_regex(file_path, regex, strict=None):
     matches = []
 
     if strict is not None:
-        regex = rf'\b{strict}\b'
+        regex = rf'(?:^|[\s,:])({re.escape(strict)})\b'
+        #regex = rf'\b{strict}\b'
 
     with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
         for line_number, line in enumerate(file, start=1):
@@ -197,194 +228,268 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
 
 #====================================== Main ======================================
 def main():
-    clear_screen()
-    print(banner)
-    parser = argparse.ArgumentParser(description=f"{Fore.GREEN}Search{Fore.RED}X{Fore.GREEN} - {Fore.BLUE}Advenced data finder{Fore.GREEN}")
-    parser.add_argument("-usage", "--usage", action="store_true", help="Get usages exemple")
-    parser.add_argument('--ip',  help='search infos through ip (iknowwhatyoudownload)')
-    parser.add_argument('--subdomain',  help='search subdomain of a spoecific host (leakix request)')
-    parser.add_argument('--comb',  help='search through the COMB leak via an API (proxynova)')
-    parser.add_argument('--skype',  help='search through skype (skypesearch)')
-    parser.add_argument('--email',  help='search emails match (holehe)')
-    parser.add_argument('--phone',  help='search phone match')
-    parser.add_argument('--username',  help='search username (blackbird)')
-    parser.add_argument('--name',  help='search first and last name (--lastname needed)')
-    parser.add_argument('--lastname',  help='search first and last name (--name needed)')
-    parser.add_argument('--exploit', nargs='*', help='Search for vulnerabilities (--exploit "description" "CVE" "port_number" : --exploit "eternalblue" OR --exploit "eternalblue" "" "445")')
-    parser.add_argument('--dorks',  help='Search for Google Dorks (--dorks "index off")')
-    parser.add_argument('-p', '--password',  help='check how many times this password has been leaked (breachdirectory)')
-    parser.add_argument("-r", "--root", help="Root directory path to explore")#, required=True) # aesthetic bug fix
-    parser.add_argument("-k", "--keywords", help="Keywords to search for in file names (separated by commas)")
-    parser.add_argument("-x", "--regex", help="Regular expression to search for in file names. Example for a keyword followed by 3 digits: abc\d{3})")
-    parser.add_argument("-kx", "--strict", help="search for strict keyword or regex")
-    parser.add_argument("-d", "--folders-only", action="store_true", help="Display only folders")
-    parser.add_argument("-dv", "--folders-verbose", action="store_true", help="Display fullpath folders")
-    parser.add_argument("-f", "--files-only", action="store_true", help="Display only files in the target directory (no sub folders)")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Display lines where keywords are found")
-    parser.add_argument("-vv", "--very-verbose", action="store_true", help="Display all the text where keywords are found in line")
-    parser.add_argument("-o", "--output", help="Save the results to a specified text file")
-    parser.add_argument('-e', '--exclude', metavar='', type=str, help='Extensions to ignore separated by commas', default='')
-    parser.add_argument('-i', '--ignore', action="store_true", help='ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin')
-    args = parser.parse_args()
+    try:
+        clear_screen()
+        print(banner)
+        parser = argparse.ArgumentParser(description=f"{Fore.GREEN}Search{Fore.RED}X{Fore.GREEN} - {Fore.BLUE}Advenced data finder{Fore.GREEN}")
+        parser.add_argument("-usage", "--usage", action="store_true", help="Get usages exemple")
+        parser.add_argument("-u", "--update", action="store_true", help="get updates")
+        parser.add_argument('--ip',  help='search infos through ip (iknowwhatyoudownload)')
+        parser.add_argument('--subdomain',  help='search subdomain of a spoecific host (leakix request)')
+        parser.add_argument('--comb',  help='search through the COMB leak via an API (proxynova)')
+        parser.add_argument('--skype',  help='search through skype (skypesearch)')
+        parser.add_argument('--email',  help='search emails match (holehe)')
+        parser.add_argument('--phone',  help='search phone match')
+        parser.add_argument('--username',  help='search username (blackbird)')
+        parser.add_argument('--name',  help='search first and last name (--lastname needed)')
+        parser.add_argument('--lastname',  help='search first and last name (--name needed)')
+        parser.add_argument('--exploit', nargs='*', help='Search for vulnerabilities (--exploit "description" "CVE-ID" "port_number" : --exploit "eternalblue" OR --exploit "eternalblue" "" "445")')
+        parser.add_argument('--dorks',  help='Search for Google Dorks (--dorks "index off")')
+        parser.add_argument('--cve', nargs='*', help='Search for cve (--cve "search query" "CVE-ID")')
+        parser.add_argument('-p', '--password',  help='check how many times this password has been leaked (breachdirectory)')
+        parser.add_argument("-r", "--root", help="Root directory path to explore")#, required=True) # aesthetic bug fix
+        parser.add_argument("-k", "--keywords", help="Keywords to search for in file names (separated by commas)")
+        parser.add_argument("-x", "--regex", help="Regular expression to search for in file names. Example for a keyword followed by 3 digits: abc\d{3})")
+        parser.add_argument("-kx", "--strict", help="Search for an exact keyword, ensuring it is preceded by specific characters (':', ' ', ',' or start of the line), ensuring no partial matches")
+        parser.add_argument("-d", "--folders-only", action="store_true", help="Display only folders")
+        parser.add_argument("-dv", "--folders-verbose", action="store_true", help="Display fullpath folders")
+        parser.add_argument("-f", "--files-only", action="store_true", help="Display only files in the target directory (no sub folders)")
+        parser.add_argument("-v", "--verbose", action="store_true", help="Display lines where keywords are found")
+        parser.add_argument("-vv", "--very-verbose", action="store_true", help="Display all the text where keywords are found in line")
+        parser.add_argument("-o", "--output", help="Save the results to a specified text file")
+        parser.add_argument('-e', '--exclude', metavar='', type=str, help='Extensions to ignore separated by commas', default='')
+        parser.add_argument('-i', '--ignore', action="store_true", help='ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin')
+        args = parser.parse_args()
 
 
-    keywords = args.keywords.split(",") if args.keywords else None
+        keywords = args.keywords.split(",") if args.keywords else None
 
 
 
-    if len(sys.argv) == 1:
-        parser.print_usage()
-        sys.exit(0)
+        if len(sys.argv) == 1:
+            parser.print_usage()
+            sys.exit(0)
 
 
-    if any([args.keywords, args.regex, args.strict, args.folders_only, args.files_only, args.verbose, args.very_verbose, args.exclude, args.ignore]) and not args.root:
-        print(f"{Fore.YELLOW}[!] {Fore.RED}[-r ROOT] argument missing{Fore.YELLOW}\n")
-        parser.print_usage()
-        sys.exit(0)
+        if any([args.keywords, args.regex, args.strict, args.folders_only, args.files_only, args.verbose, args.very_verbose, args.exclude, args.ignore]) and not args.root:
+            print(f"{Fore.YELLOW}[!] {Fore.RED}[-r ROOT] argument missing{Fore.YELLOW}\n")
+            parser.print_usage()
+            sys.exit(0)
+
+        if args.update:
+            git_pull()
 
 
-    if args.usage:
-        print(f"\n{Fore.YELLOW}[Usages exemple]\n")
-        print(f"{Fore.YELLOW}Search only 'password' keyword :\n   {Fore.GREEN}searchx.py -r C:/users -k password\n")
-        print(f"{Fore.YELLOW}Search for the keywords 'pass', 'test', and 'hello' in full path, excluding files with extensions '.zip' and '.rar' :\n   {Fore.GREEN}searchx.py -r C:/users -k password,test,hello -dv -e .zip,.rar\n")
-        print(f"{Fore.YELLOW}Search for the regex 'testXXX' where XXX represents numbers :\n   {Fore.GREEN}searchx.py -r C:/users -x " + "test\d{3}\n")
-        print(f"{Fore.YELLOW}Show full path folders only :\n   {Fore.GREEN}searchx.py -r C:/users -d -dv\n")
-        print(f"{Fore.YELLOW}Display the full path of folders containing the keywords 'password' and 'test', along with all text where these keywords are found in line, while ignoring default extensions :\n   {Fore.GREEN}searchx.py -r C:/users -k password,test -dv -i -vv\n")
-        print(f"{Fore.YELLOW}Set token.txt to search a user with --skype :\n   {Fore.GREEN}searchx.py --skype exemple@exemple.com\n")
-        print(f"{Fore.YELLOW}--name NAME --lastname LASTNAME :\n   {Fore.GREEN}Facebook, Copains d'avant, wattpad, annonces mortuaires, pages blanches, bac, brevet\n")
-        print(f"{Fore.YELLOW}Search for phone number --phone +PHONECODE_PHONENUMBER (use phone code with '+') :\n   {Fore.GREEN}searchx.py --phone +33633894568\nsearchx.py --phone +330633894568\n")
-        exit()
+        if args.usage:
+            print(f"\n{Fore.YELLOW}[Usages exemple]\n")
+            print(f"{Fore.YELLOW}Search only 'password' keyword :\n   {Fore.GREEN}searchx.py -r C:/users -k password\n")
+            print(f"{Fore.YELLOW}Search for the keywords 'pass', 'test', and 'hello' in full path, excluding files with extensions '.zip' and '.rar' :\n   {Fore.GREEN}searchx.py -r C:/users -k password,test,hello -dv -e .zip,.rar\n")
+            print(f"{Fore.YELLOW}Search for the regex 'testXXX' where XXX represents numbers :\n   {Fore.GREEN}searchx.py -r C:/users -x " + "test\d{3}\n")
+            print(f"{Fore.YELLOW}Show full path folders only :\n   {Fore.GREEN}searchx.py -r C:/users -d -dv\n")
+            print(f"{Fore.YELLOW}Display the full path of folders containing the keywords 'password' and 'test', along with all text where these keywords are found in line, while ignoring default extensions :\n   {Fore.GREEN}searchx.py -r C:/users -k password,test -dv -i -vv\n")
+            print(f"{Fore.YELLOW}Set token.txt to search a user with --skype :\n   {Fore.GREEN}searchx.py --skype exemple@exemple.com\n")
+            print(f"{Fore.YELLOW}--name NAME --lastname LASTNAME :\n   {Fore.GREEN}Facebook, Copains d'avant, wattpad, annonces mortuaires, pages blanches, bac, brevet\n")
+            print(f"{Fore.YELLOW}Search for phone number --phone +PHONECODE_PHONENUMBER (use phone code with '+') :\n   {Fore.GREEN}searchx.py --phone +33633894568\nsearchx.py --phone +330633894568\n")
+            exit()
 
 
-    output_file = None
-    if args.output:
-        sys.stdout = TeeOutput(args.output)
+        output_file = None
+        if args.output:
+            sys.stdout = TeeOutput(args.output)
 
 
-    if args.skype:
-        print(f"{Fore.YELLOW}----- Credit to : {Fore.GREEN}https://github.com/Totoro2205/SkypeSearch{Fore.YELLOW} -----{Fore.GREEN}")
-        skype(args.skype, 'Tokens/skype_token.txt')
-        
-    if args.comb:
-        print(f"{Fore.YELLOW}----- Connect db api : {Fore.GREEN}https://www.proxynova.com/{Fore.YELLOW} -----")
-        proxynova1(args.comb)
-       
-    if args.password:
-        print(f"{Fore.YELLOW}----- Connect db api : {Fore.GREEN}https://breachdirectory.org/passwords{Fore.YELLOW} -----")
-        passwordtest(args.password)
-        
-    if args.email:
-        print(f"{Fore.YELLOW}----- Launching holehe : {Fore.GREEN}https://github.com/megadose/holehe{Fore.YELLOW} -----")
-        print(f"[!] Checking dependencies ...")
-        check_holehe(args.email)
-        
-        leackcheck(args.email)
-        scam(args.email)
-        
-        
-        
-        print(f"\n{Fore.YELLOW}[!] Urls to visit")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://epieos.com/")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://haveibeenpwned.com/")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://breachdirectory.org/")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://cybernews.com/personal-data-leak-check/")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://breach.vip/")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://oathnet.ru/")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://dehashed.com/")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
-        
-        
-        
-        
-    if args.username:
-        print(f"{Fore.YELLOW}----- Launching blackbird : {Fore.GREEN}https://github.com/p1ngul1n0/blackbird{Fore.YELLOW} -----")
-        print(f"[!] Checking dependencies ...")
-        blackbirdZ(args.username)
-        githubusername(args.username)
-        
-        print(f"{Fore.YELLOW}[!] Urls to visit")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
-        
-        
-    if (args.name and not args.lastname) or (args.lastname and not args.name):
-        print(f"{Fore.RED}Error : Launching social medias fail. args --name and --lastname needed\n")
+        if args.skype:
+            try:
+                print(f"{Fore.YELLOW}----- Credit to : {Fore.GREEN}https://github.com/Totoro2205/SkypeSearch{Fore.YELLOW} -----{Fore.GREEN}")
+                skype(args.skype, 'Tokens/skype_token.txt')
+                
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
+            
+            
+        if args.comb:
+            try:
+                print(f"{Fore.YELLOW}----- Connect db api : {Fore.GREEN}https://www.proxynova.com/{Fore.YELLOW} -----")
+                proxynova1(args.comb)
+           
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
+                
+           
+        if args.password:
+            print(f"{Fore.YELLOW}----- Connect db api : {Fore.GREEN}https://breachdirectory.org/passwords{Fore.YELLOW} -----")
+            passwordtest(args.password)
+            
+        if args.email:
+            try:
+                print(f"{Fore.YELLOW}----- Launching holehe : {Fore.GREEN}https://github.com/megadose/holehe{Fore.YELLOW} -----")
+                print(f"[!] Checking dependencies ...")
+                check_holehe(args.email)
+                
+                leackcheck(args.email)
+                scam(args.email)
+                
+                print(f"\n{Fore.YELLOW}----- Launching Ghunt : {Fore.GREEN}https://github.com/mxrch/GHunt{Fore.YELLOW} -----")
+                ghunter(args.email)
+                
+                
+                print(f"\n{Fore.YELLOW}[!] Urls to visit")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://epieos.com/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://haveibeenpwned.com/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://breachdirectory.org/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://cybernews.com/personal-data-leak-check/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://breach.vip/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://oathnet.ru/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://dehashed.com/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
+            
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
+            
+            
+        if args.username:
+            try:
+                print(f"{Fore.YELLOW}----- Launching blackbird : {Fore.GREEN}https://github.com/p1ngul1n0/blackbird{Fore.YELLOW} -----")
+                print(f"[!] Checking dependencies ...")
+                blackbirdZ(args.username)
+                githubusername(args.username)
+                
+                print(f"\n{Fore.YELLOW}[!] Urls to visit")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
 
-    if args.name and args.lastname:
-        print(f"{Fore.YELLOW}----- Launching social medias : {Fore.GREEN}instagram, facebook, twitter, linkedin{Fore.YELLOW} -----")
-        namesID(args.name, args.lastname)
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
+                
+            
+        if (args.name and not args.lastname) or (args.lastname and not args.name):
+            print(f"{Fore.RED}Error : Launching social medias fail. args --name and --lastname needed\n")
 
-    if args.phone:
-        basicinfos(args.phone)
-        print(f"{Fore.YELLOW}----- Launching ignorant : {Fore.GREEN}https://github.com/megadose/ignorant{Fore.YELLOW} -----") # Bug
-        print(f"[!] Checking dependencies ...")
-        check_ignorant(args.phone)
-        print(f"\n{Fore.YELLOW}----- Launching haveibeenzuckered.com api : {Fore.GREEN}https://haveibeenzuckered.com/{Fore.YELLOW} -----")
-        leaked(args.phone)
-        
-        
-    if args.ip:
-        torrents(args.ip) 
-        ipinfo(args.ip)
-        shodanit(args.ip)
-        check_ip_with_virustotal(args.ip, 'Tokens/virustotal_token.txt')
-        leakXx(args.ip)
-        getwatweb(args.ip)
-        
-        print(f"\n{Fore.YELLOW}[!] Urls to visit")
-        print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
-        
-        
-    if args.subdomain:
-        subreponse(args.subdomain)
-        getwatweb(args.subdomain)
-        
-    search_term, cve, port = None, None, None
-    if args.exploit is not None:
-        print(f"{Fore.YELLOW}----- Exploitdb from : {Fore.GREEN}https://www.exploit-db.com/{Fore.YELLOW} -----{Fore.GREEN}")
-        if len(args.exploit) > 0:
-            search_term = args.exploit[0]
-        if len(args.exploit) > 1:
-            cve = args.exploit[1]
-        if len(args.exploit) > 2:
-            port = args.exploit[2]
+        if args.name and args.lastname:
+            try:
+                print(f"{Fore.YELLOW}----- Launching social medias : {Fore.GREEN}instagram, facebook, twitter, linkedin{Fore.YELLOW} -----")
+                namesID(args.name, args.lastname)
 
-        initexploitdb(search_term, cve, port)
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
+                
+
+        if args.phone:
+            try:
+                basicinfos(args.phone)
+                print(f"{Fore.YELLOW}----- Launching ignorant : {Fore.GREEN}https://github.com/megadose/ignorant{Fore.YELLOW} -----") # Bug
+                print(f"[!] Checking dependencies ...")
+                check_ignorant(args.phone)
+                print(f"\n{Fore.YELLOW}----- Launching haveibeenzuckered.com api : {Fore.GREEN}https://haveibeenzuckered.com/{Fore.YELLOW} -----")
+                leaked(args.phone)
+                
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
+                
+            
+        if args.ip:
+            try:
+                torrents(args.ip) 
+                ipinfo(args.ip)
+                shodanit(args.ip)
+                check_ip_with_virustotal(args.ip, 'Tokens/virustotal_token.txt')
+                leakXx(args.ip)
+                getwatweb(args.ip)
+                
+                print(f"\n{Fore.YELLOW}[!] Urls to visit")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
+
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
+            
+            
+        if args.subdomain:
+            try:
+                subreponse(args.subdomain)
+                getwatweb(args.subdomain)
+            
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
+            
+        search_term, cve, port = None, None, None
+        if args.exploit is not None:
+            try:
+                print(f"{Fore.YELLOW}----- Exploitdb from : {Fore.GREEN}https://www.exploit-db.com/{Fore.YELLOW} -----{Fore.GREEN}")
+                if len(args.exploit) > 0:
+                    search_term = args.exploit[0]
+                if len(args.exploit) > 1:
+                    cve = args.exploit[1]
+                if len(args.exploit) > 2:
+                    port = args.exploit[2]
+
+                initexploitdb(search_term, cve, port)
+                
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)   
+
+        if args.cve is not None:
+            try:
+                if len(args.cve) > 0:
+                    search_term = args.cve[0]
+                if len(args.cve) > 1:
+                    cve = args.cve[1]
+                
+                searchcve(search_term, cve)
+                
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)  
     
-    
-    if args.dorks:
-        initialize_dorksdb()
-        dorksearch(args.dorks)
-    
-    
-    
+                
+        if args.dorks:
+            try:
+                initialize_dorksdb()
+                dorksearch(args.dorks)
+                
+            except KeyboardInterrupt:
+                print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+                sys.exit(0)
         
-    # Filters management
-    ignored_extensions = None
-    if args.exclude:
-        ignored_extensions = args.exclude.split(',')
-    else:
+        
+            
+        # Filters management
         ignored_extensions = None
-        
-    if args.ignore:
-        default_ignored_extensions = ['.jpg', '.png', '.exe', '.zip', '.rar', '.iso', '.jpeg', '.7z', '.msi', '.cap', '.bin']
-        if ignored_extensions:
-            ignored_extensions += default_ignored_extensions
+        if args.exclude:
+            ignored_extensions = args.exclude.split(',')
         else:
-            ignored_extensions = default_ignored_extensions 
+            ignored_extensions = None
             
-    very_verbose = args.very_verbose          
-            
-    if args.root:
-        print(Fore.YELLOW + args.root) # Folder search -r
-        print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+        if args.ignore:
+            default_ignored_extensions = ['.jpg', '.png', '.exe', '.zip', '.rar', '.iso', '.jpeg', '.7z', '.msi', '.cap', '.bin']
+            if ignored_extensions:
+                ignored_extensions += default_ignored_extensions
+            else:
+                ignored_extensions = default_ignored_extensions 
+                
+        very_verbose = args.very_verbose          
+                
+        if args.root:
+            print(Fore.YELLOW + args.root) # Folder search -r
+            print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+
+                
+        if output_file:
+            sys.stdout.close()
 
             
-    if output_file:
-        sys.stdout.close()
-
+        print(f"\n{Fore.YELLOW}[!] End of search")
         
-    print(f"\n{Fore.YELLOW}[!] End of search")
-        
+    except KeyboardInterrupt:
+        print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
+        sys.exit(0)
         
 if __name__ == "__main__":
     main()
