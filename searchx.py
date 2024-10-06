@@ -84,10 +84,10 @@ class TeeOutput:
 #====================================== Program update ======================================
 def git_pull():
     try:
-        repo_path = os.getcwd()
-        
+        repo_path = os.path.dirname(os.path.abspath(__file__)) #bug fix cli windows installation
+
         if not os.path.isdir(os.path.join(repo_path, ".git")):
-            print("The current directory is not a Git repository (no .git folder found).")
+            print(f"The current directory ({repo_path}) is not a Git repository (no .git folder found).")
             return
 
         os.chdir(repo_path)
