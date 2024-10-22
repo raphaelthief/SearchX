@@ -254,7 +254,7 @@ def main():
         parser.add_argument("-kx", "--strict", help="Search for an exact keyword, ensuring it is preceded by specific characters (':', ' ', ',' or start of the line), ensuring no partial matches")
         parser.add_argument("-d", "--folders-only", action="store_true", help="Display only folders")
         parser.add_argument("-dv", "--folders-verbose", action="store_true", help="Display fullpath folders")
-        parser.add_argument("-f", "--files-only", action="store_true", help="Display only files in the target directory (no sub folders)")
+        parser.add_argument("-f", "--files-only", action="store_true", help="Display only matched files ")
         parser.add_argument("-v", "--verbose", action="store_true", help="Display lines where keywords are found")
         parser.add_argument("-vv", "--very-verbose", action="store_true", help="Display all the text where keywords are found in line")
         parser.add_argument("-o", "--output", help="Save the results to a specified text file")
@@ -345,6 +345,8 @@ def main():
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://oathnet.ru/")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://dehashed.com/")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://leakpeek.com/")
+                
             
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
@@ -478,7 +480,21 @@ def main():
         very_verbose = args.very_verbose          
                 
         if args.root:
-            print(Fore.YELLOW + args.root) # Folder search -r
+            if args.keywords or args.strict or args.regex:
+                print(f"{Fore.YELLOW}[!] Search for :")
+                
+                if args.keywords:
+                    print(f"    {Fore.GREEN}[+] {Fore.RED}{args.keywords} {Fore.GREEN}keyword(s)")
+                
+                if args.strict:
+                    print(f"    {Fore.GREEN}[+] {Fore.RED}{args.strict} {Fore.GREEN}stric keyword(s)")
+                
+                if args.regex:
+                    print(f"    {Fore.GREEN}[+] {Fore.RED}{args.regex} {Fore.GREEN}regex")
+                
+                print("")
+                
+            print(Fore.YELLOW + args.root + "test") # Folder search -r
             print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
 
                 
