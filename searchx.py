@@ -203,11 +203,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
         else:
             print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
 
-
-
     else:
-        
-     
      
         try:
             items = os.listdir(directory)
@@ -574,10 +570,10 @@ def main():
                 if args.regex:
                     print(f"    {Fore.GREEN}[+] {Fore.RED}{args.regex} {Fore.GREEN}regex")
                 
-                print("")
-                print(Fore.YELLOW + args.root) # Folder search -r
-                print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
-                print("")
+            print("")
+            print(Fore.YELLOW + args.root) # Folder search -r
+            print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+            print("")
             
         if args.rootfile:
             if args.keywords or args.strict or args.regex:
@@ -592,10 +588,10 @@ def main():
                 if args.regex:
                     print(f"    {Fore.GREEN}[+] {Fore.RED}{args.regex} {Fore.GREEN}regex")
                 
-                print("")        
-                print(Fore.YELLOW + args.rootfile) # File search -r
-                print_tree("file!" + args.rootfile, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
-                print("") 
+            print("")        
+            print(Fore.YELLOW + args.rootfile) # File search -r
+            print_tree("file!" + args.rootfile, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+            print("") 
                 
         if output_file:
             sys.stdout.close()
