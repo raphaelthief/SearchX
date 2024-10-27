@@ -128,102 +128,183 @@ def search_regex(file_path, regex, strict=None):
 dirfileonly = [""]
 def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, strict=None, folders_only=False, files_only=False, verbose=False, ignored_extensions=None, very_verbose=False, folders_verbose=None):
     global dirfileonly
-    try:
-        items = os.listdir(directory)
-    except PermissionError:
-        print(f"{color}{Fore.RED}Permission denied : {directory}")
-        return
     
-    for i, item in enumerate(sorted(items)):
-        full_path = os.path.join(directory, item)
-        
-        if os.path.isdir(full_path):
-            if not files_only:
+    if "file!" in directory:
+        full_path = directory.replace("file!", "")
+        if keywords or regex or strict:
+            with open(full_path, 'r', encoding='utf-8', errors='ignore') as file:
             
-                if not folders_verbose:
-            
-                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{item}")
-                    
-                else:
-                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{full_path}")
-                    
-            if (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):#if not files_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
-                print_tree(full_path, depth + 1, keywords, regex, color, strict, folders_only, files_only, verbose, ignored_extensions, very_verbose, folders_verbose)
-        else:
-            if not folders_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
-                
-                if keywords or regex or strict:
-                    with open(full_path, 'r', encoding='utf-8', errors='ignore') as file:
-                    
-                        if not very_verbose and not verbose:
-                            if keywords:
-                                
-                                if files_only:
-                                    print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
-                                else:    
-                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                                
-                            if regex or strict:
-                                matches = search_regex(full_path, regex, strict)
-                                if strict:
-                                    regex = strict
+                if not very_verbose and not verbose:
+                    if keywords:
+                        
+                        if files_only:
+                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                        else:    
+                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+                        
+                    if regex or strict:
+                        matches = search_regex(full_path, regex, strict)
+                        if strict:
+                            regex = strict
 
-                                for line in matches:
+                        for line in matches:
+                            if files_only:
+                                print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                            else:    
+                                print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+                    
+                if verbose and not very_verbose:
+                    for line_number, line in enumerate(file, start=1):
+                        if keywords:
+                            for keyword in keywords:
+                                if keyword.lower() in line.lower():
+                                    if files_only:
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                    else:
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                    
+                    if regex or strict:
+                        matches = search_regex(full_path, regex, strict)
+                        if strict:
+                            regex = strict
+                            
+                        for line_number, line in matches:
+                            if files_only:
+                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                            else:    
+                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                            
+                if very_verbose:
+                    for line_number, line in enumerate(file, start=1):
+                        if keywords:
+                            for keyword in keywords:
+                                if keyword.lower() in line.lower():
+                                    if files_only:
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                    else:    
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                   
+                                    if very_verbose:
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
+                                      
+                    if regex or strict:
+                        matches = search_regex(full_path, regex, strict)
+                        if strict:
+                            regex = strict
+                            
+                        for line_number, line in matches:
+                            if files_only:
+                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                            else:    
+                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                           
+                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
+                                    
+        else:
+            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
+
+
+
+    else:
+        
+     
+     
+        try:
+            items = os.listdir(directory)
+        except PermissionError:
+            print(f"{color}{Fore.RED}Permission denied : {directory}")
+            return
+        
+        for i, item in enumerate(sorted(items)):
+            full_path = os.path.join(directory, item)
+            
+            if os.path.isdir(full_path):
+                if not files_only:
+                
+                    if not folders_verbose:
+                
+                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{item}")
+                        
+                    else:
+                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{full_path}")
+                        
+                if (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):#if not files_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
+                    print_tree(full_path, depth + 1, keywords, regex, color, strict, folders_only, files_only, verbose, ignored_extensions, very_verbose, folders_verbose)
+            else:
+                if not folders_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
+                    
+                    if keywords or regex or strict:
+                        with open(full_path, 'r', encoding='utf-8', errors='ignore') as file:
+                        
+                            if not very_verbose and not verbose:
+                                if keywords:
+                                    
                                     if files_only:
                                         print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
                                     else:    
-                                        print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                            
-                        if verbose and not very_verbose:
-                            for line_number, line in enumerate(file, start=1):
-                                if keywords:
-                                    for keyword in keywords:
-                                        if keyword.lower() in line.lower():
-                                            if files_only:
-                                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                                            else:
-                                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                                            
-                            if regex or strict:
-                                matches = search_regex(full_path, regex, strict)
-                                if strict:
-                                    regex = strict
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
                                     
-                                for line_number, line in matches:
-                                    if files_only:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                                    else:    
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                                    
-                        if very_verbose:
-                            for line_number, line in enumerate(file, start=1):
-                                if keywords:
-                                    for keyword in keywords:
-                                        if keyword.lower() in line.lower():
-                                            if files_only:
-                                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                                            else:    
-                                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
-                                           
-                                            if very_verbose:
-                                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
-                                              
-                            if regex or strict:
-                                matches = search_regex(full_path, regex, strict)
-                                if strict:
-                                    regex = strict
-                                    
-                                for line_number, line in matches:
-                                    if files_only:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                                    else:    
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                                   
-                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
-                                            
-                else:
-                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
-                  
+                                if regex or strict:
+                                    matches = search_regex(full_path, regex, strict)
+                                    if strict:
+                                        regex = strict
+
+                                    for line in matches:
+                                        if files_only:
+                                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                                        else:    
+                                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+                                
+                            if verbose and not very_verbose:
+                                for line_number, line in enumerate(file, start=1):
+                                    if keywords:
+                                        for keyword in keywords:
+                                            if keyword.lower() in line.lower():
+                                                if files_only:
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                                else:
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                                
+                                if regex or strict:
+                                    matches = search_regex(full_path, regex, strict)
+                                    if strict:
+                                        regex = strict
+                                        
+                                    for line_number, line in matches:
+                                        if files_only:
+                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                        else:    
+                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                        
+                            if very_verbose:
+                                for line_number, line in enumerate(file, start=1):
+                                    if keywords:
+                                        for keyword in keywords:
+                                            if keyword.lower() in line.lower():
+                                                if files_only:
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                                else:    
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                               
+                                                if very_verbose:
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
+                                                  
+                                if regex or strict:
+                                    matches = search_regex(full_path, regex, strict)
+                                    if strict:
+                                        regex = strict
+                                        
+                                    for line_number, line in matches:
+                                        if files_only:
+                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                        else:    
+                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                       
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
+                                                
+                    else:
+                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
+                      
 
 
 
@@ -249,6 +330,7 @@ def main():
         parser.add_argument('--cve', nargs='*', help='Search for cve (--cve "search query" "CVE-ID")')
         parser.add_argument('-p', '--password',  help='check how many times this password has been leaked (breachdirectory)')
         parser.add_argument("-r", "--root", help="Root directory path to explore")#, required=True) # aesthetic bug fix
+        parser.add_argument("-rf", "--rootfile", help="Specific file to explore (only one file)")#, required=True) # aesthetic bug fix
         parser.add_argument("-k", "--keywords", help="Keywords to search for in file names (separated by commas)")
         parser.add_argument("-x", "--regex", help="Regular expression to search for in file names. Example for a keyword followed by 3 digits: abc\d{3})")
         parser.add_argument("-kx", "--strict", help="Search for an exact keyword, ensuring it is preceded by specific characters (':', ' ', ',' or start of the line), ensuring no partial matches")
@@ -272,8 +354,8 @@ def main():
             sys.exit(0)
 
 
-        if any([args.keywords, args.regex, args.strict, args.folders_only, args.files_only, args.verbose, args.very_verbose, args.exclude, args.ignore]) and not args.root:
-            print(f"{Fore.YELLOW}[!] {Fore.RED}[-r ROOT] argument missing{Fore.YELLOW}\n")
+        if any([args.keywords, args.regex, args.strict, args.folders_only, args.files_only, args.verbose, args.very_verbose, args.exclude, args.ignore]) and not (args.root or args.rootfile):
+            print(f"{Fore.YELLOW}[!] {Fore.RED}[-r ROOT] or [-rf ROOTFILE] argument missing{Fore.YELLOW}\n")
             parser.print_usage()
             sys.exit(0)
 
@@ -481,7 +563,7 @@ def main():
                 
         if args.root:
             if args.keywords or args.strict or args.regex:
-                print(f"{Fore.YELLOW}[!] Search for :")
+                print(f"{Fore.YELLOW}[!] Directory search for :")
                 
                 if args.keywords:
                     print(f"    {Fore.GREEN}[+] {Fore.RED}{args.keywords} {Fore.GREEN}keyword(s)")
@@ -493,10 +575,27 @@ def main():
                     print(f"    {Fore.GREEN}[+] {Fore.RED}{args.regex} {Fore.GREEN}regex")
                 
                 print("")
+                print(Fore.YELLOW + args.root) # Folder search -r
+                print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+                print("")
+            
+        if args.rootfile:
+            if args.keywords or args.strict or args.regex:
+                print(f"{Fore.YELLOW}[!] File search for :")
                 
-            print(Fore.YELLOW + args.root + "test") # Folder search -r
-            print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
-
+                if args.keywords:
+                    print(f"    {Fore.GREEN}[+] {Fore.RED}{args.keywords} {Fore.GREEN}keyword(s)")
+                
+                if args.strict:
+                    print(f"    {Fore.GREEN}[+] {Fore.RED}{args.strict} {Fore.GREEN}stric keyword(s)")
+                
+                if args.regex:
+                    print(f"    {Fore.GREEN}[+] {Fore.RED}{args.regex} {Fore.GREEN}regex")
+                
+                print("")        
+                print(Fore.YELLOW + args.rootfile) # File search -r
+                print_tree("file!" + args.rootfile, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+                print("") 
                 
         if output_file:
             sys.stdout.close()
