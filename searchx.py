@@ -360,15 +360,31 @@ def main():
 
 
         if args.usage:
-            print(f"\n{Fore.YELLOW}[Usages exemple]\n")
-            print(f"{Fore.YELLOW}Search only 'password' keyword :\n   {Fore.GREEN}searchx.py -r C:/users -k password\n")
-            print(f"{Fore.YELLOW}Search for the keywords 'pass', 'test', and 'hello' in full path, excluding files with extensions '.zip' and '.rar' :\n   {Fore.GREEN}searchx.py -r C:/users -k password,test,hello -dv -e .zip,.rar\n")
-            print(f"{Fore.YELLOW}Search for the regex 'testXXX' where XXX represents numbers :\n   {Fore.GREEN}searchx.py -r C:/users -x " + "test\d{3}\n")
-            print(f"{Fore.YELLOW}Show full path folders only :\n   {Fore.GREEN}searchx.py -r C:/users -d -dv\n")
-            print(f"{Fore.YELLOW}Display the full path of folders containing the keywords 'password' and 'test', along with all text where these keywords are found in line, while ignoring default extensions :\n   {Fore.GREEN}searchx.py -r C:/users -k password,test -dv -i -vv\n")
-            print(f"{Fore.YELLOW}Set token.txt to search a user with --skype :\n   {Fore.GREEN}searchx.py --skype exemple@exemple.com\n")
-            print(f"{Fore.YELLOW}--name NAME --lastname LASTNAME :\n   {Fore.GREEN}Facebook, Copains d'avant, wattpad, annonces mortuaires, pages blanches, bac, brevet\n")
-            print(f"{Fore.YELLOW}Search for phone number --phone +PHONECODE_PHONENUMBER (use phone code with '+') :\n   {Fore.GREEN}searchx.py --phone +33633894568\nsearchx.py --phone +330633894568\n")
+
+            print(f"\n{Fore.YELLOW}[Usages exemple]")
+            print(f"{Fore.YELLOW}---------------------------------------------------------------------------\n{Fore.GREEN}")
+            print(f"{Fore.YELLOW}[+] Set token.txt to search a user with --skype :\n    {Fore.GREEN}searchx.py --skype exemple@exemple.com")
+            print(f"{Fore.YELLOW}[+] Search for Facebook, Copains d'avant, wattpad, annonces mortuaires, pages blanches, bac, brevet, ... :\n    {Fore.GREEN}searchx.py --name NAME --lastname LASTNAME")
+            print(f"{Fore.YELLOW}[+] Search for phone number --phone +PHONECODE_PHONENUMBER (use phone code with '+') :\n    {Fore.GREEN}searchx.py --phone +33633894568\n    searchx.py --phone +330633894568")
+            print(f"{Fore.YELLOW}[+] Search for email infos :\n    {Fore.GREEN}searchx.py --email exemple@gmail.com")
+            print(f"{Fore.YELLOW}[+] Search for ip infos :\n    {Fore.GREEN}searchx.py --ip <ip>")
+            print(f"{Fore.YELLOW}[+] Search for leaked infos into COMB db :\n    {Fore.GREEN}searchx.py --comb <search_query>")
+            print(f"{Fore.YELLOW}[+] Search for DNS & subdomains infos :\n    {Fore.GREEN}searchx.py --subdomain <ip or DNS>")
+            print(f"{Fore.YELLOW}[+] Search for username infos :\n    {Fore.GREEN}searchx.py --username <username>")
+            print(f"{Fore.YELLOW}[+] Search for Google Dorks :\n    {Fore.GREEN}searchx.py --dorks <search_query>")
+            print(f"{Fore.YELLOW}[+] Search for exploits :\n    {Fore.GREEN}searchx.py --exploit 'description' 'CVE-ID' 'port_number' | searchx.py --exploit 'eternalblue' | searchx.py --exploit 'eternalblue' '' '445'")
+            print(f"{Fore.YELLOW}[+] Search for CVE :\n    {Fore.GREEN}searchx.py --cve 'search_query' 'CVE_ID' | searchx.py --cve 'eternalblue' | searchx.py --cve '' 'CVE-2024_16738'")
+            
+            print(f"{Fore.YELLOW}    \n---------------------------------------------------------------------------\n{Fore.GREEN}")
+            
+            print(f"{Fore.YELLOW}[+] Search only 'password' keyword :\n    {Fore.GREEN}searchx.py -r C:/users -k password")
+            print(f"{Fore.YELLOW}[+] Search for the keywords 'pass', 'test', and 'hello' in full path, excluding files with extensions '.zip' and '.rar' :\n    {Fore.GREEN}searchx.py -r C:/users -k password,test,hello -dv -e .zip,.rar")
+            print(f"{Fore.YELLOW}[+] Search for the regex 'testXXX' where XXX represents numbers :\n    {Fore.GREEN}searchx.py -r C:/users -x " + "test\d{3}")
+            print(f"{Fore.YELLOW}[+] Show full path folders only :\n    {Fore.GREEN}searchx.py -r C:/users -d -dv")
+            print(f"{Fore.YELLOW}[+] Display the full path of folders containing the keywords 'password' and 'test', along with all text where these keywords are found in line, while ignoring default extensions :\n    {Fore.GREEN}searchx.py -r C:/users -k password,test -dv -i -vv")
+            print(f"{Fore.YELLOW}[+] Search through one file :\n    {Fore.GREEN}searchx.py -rf C:/users/file.txt -k <keyword> -vv")
+            print(f"{Fore.YELLOW}[+] Search for keywords and display only the files found that match one of the keywords, showing the full file path and its content :\n    {Fore.GREEN}searchx.py -r C:/users/path  -k <keyword1,keyword2> -dv -vv -f")
+
             exit()
 
 
