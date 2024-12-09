@@ -57,5 +57,5 @@ def subreponse2(domain):
         for cert in filtered_list:
             print(f"{Fore.GREEN}[+] {Fore.YELLOW}Name       : {Fore.CYAN}{cert['common_name']}")
             print(f"{Fore.GREEN}[+] {Fore.YELLOW}Entry time : {Fore.GREEN}{cert['entry_timestamp']}")
-            print(f"{Fore.GREEN}[+] {Fore.YELLOW}More infos : {Fore.GREEN}{cert['id']}{Fore.YELLOW}")
+            print(f"{Fore.GREEN}[+] {Fore.YELLOW}More infos : {Fore.GREEN}https://crt.sh/?id={cert['id']}{Fore.YELLOW}")
             print("-" * 50)
