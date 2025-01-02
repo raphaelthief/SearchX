@@ -4,14 +4,21 @@
   <id>1</id>
   <category>Files</category>
   <shortDescription>Search for documents through the LinkedIn file hosting service like cv / resume</shortDescription>
-  <query>site:media.licdn.com intitle:cv intext:"alternance"</query>
+  <query>site:media.licdn.com intitle:cv intext:"search_query"</query>
   <querystring>https://www.google.com/search?q=site:media.licdn.com%20intitle:cv%20intext:%22alternance%22</querystring>
  </entry>
  <entry>
   <id>2</id>
   <category>Leak</category>
   <shortDescription>Search for various dorks across different leak forums</shortDescription>
-  <query>"deezer" (site:breachforums.st OR site:cracking.org OR site:nulled.io OR site:cracked.io OR site:patched.to OR site:crackingx.com)</query>
-  <querystring>https://www.google.com/search?q=%22deezer%22%20(site:breachforums.st%20OR%20site:cracking.org%20OR%20site:nulled.io%20OR%20site:cracked.io%20OR%20site:patched.to%20OR%20site:crackingx.com)</querystring>
+  <query>"search_query" (site:breachforums.st OR site:cracking.org OR site:nulled.io OR site:cracked.io OR site:patched.to OR site:crackingx.com OR site:darknetarmy.com OR site:leakbase.io)</query>
+  <querystring>https://www.google.com/search?q=%22deezer%22%20(site:breachforums.st%20OR%20site:cracking.org%20OR%20site:nulled.io%20OR%20site:cracked.io%20OR%20site:patched.to%20OR%20site:crackingx.com%20OR%20site:darknetarmy.com%20OR%20site:leakbase.io)</querystring>
+ </entry>
+  <entry>
+  <id>3</id>
+  <category>Leak</category>
+  <shortDescription>Leaks forums and db</shortDescription>
+  <query>breachforums.st | cracking.org | nulled.io | cracked.io | patched.to | crackingx. | darknetarmy.com | leakbase.io | btdig.com | sizeof.cat/post/data-leaks/</query>
+  <querystring>None</querystring>
  </entry>
 </gdorks>
