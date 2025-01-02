@@ -18,7 +18,7 @@
   <id>3</id>
   <category>Leak</category>
   <shortDescription>Leaks forums and db</shortDescription>
-  <query>breachforums.st | cracking.org | nulled.io | cracked.io | patched.to | crackingx. | darknetarmy.com | leakbase.io | btdig.com | sizeof.cat/post/data-leaks/</query>
+  <query>breachforums.st | cracking.org | nulled.io | cracked.io | patched.to | crackingx. | darknetarmy.com | leakbase.io | btdig.com | sizeof.cat/post/data-leaks/ | data.ddosecrets.com</query>
   <querystring>None</querystring>
  </entry>
 </gdorks>
