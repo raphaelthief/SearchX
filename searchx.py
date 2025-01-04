@@ -1,5 +1,5 @@
 # Of course, you're not going to use this tool to sift through ransomware leaks or any other crap. Don't be stupid and respect the law !
-import os, re, argparse, json, requests, urllib3, sys
+import os, re, argparse, json, requests, urllib3, sys, time
 
 # Check dependencies
 import subprocess
@@ -27,6 +27,7 @@ from Dependencies.virustotal import check_ip_with_virustotal
 from Dependencies.exploitfinder import initexploitdb, initialize_dorksdb, dorksearch
 from Dependencies.cvesearch import searchcve
 from Dependencies.whatweb import getwatweb
+from concurrent.futures import ThreadPoolExecutor
 
 # colorama
 from colorama import init, Fore, Style
@@ -303,6 +304,63 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                       
 
 
+#====================================== MultiThreading ======================================
+
+# Function to search for a keyword in a file
+def search_keyword_in_file(file, keywords=None, very_verbose=False, verbose=False):
+    try:
+        color=Fore.BLUE
+        with open(file, 'r', encoding='utf-8', errors='ignore') as f:
+            # Read the entire content of the file
+            content = f.read()
+            
+            # Check if any keyword is in the content
+            if any(keyword.lower() in content.lower() for keyword in keywords):
+                # Mode normal (non verbose)
+                if not very_verbose and not verbose:
+                    print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords} {Fore.GREEN}in {Fore.YELLOW}{file}")
+                
+                # Verbose and very_verbose modes
+                else:
+                    for line_number, line in enumerate(content.splitlines(), start=1):
+                        for keyword in keywords:
+                            if keyword.lower() in line.lower():
+                                if very_verbose:
+                                    print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{file}")
+                                    print(f"{color}{Style.BRIGHT}│   {Fore.CYAN}{line.strip()}")
+                                else:
+                                    print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{file}")
+
+    except Exception as e:
+        pass
+
+
+# Function to walk through directories and files
+def walk_through_directories(directory, keywords=None, num_threads=10, very_verbose=False, verbose=False, ignored_extensions=None):
+    start_time = time.time()
+    files_to_process = []
+    # Walk through all subdirectories and files in the given directory
+    for root, subdirs, files in os.walk(directory):
+        for file in files:
+            file_path = os.path.join(root, file)
+            
+            # Skip files with ignored extensions
+            if ignored_extensions:
+                file_extension = os.path.splitext(file)[1].lower()
+                if file_extension in ignored_extensions:
+                    continue  # Skip this file and move to the next one
+
+            files_to_process.append(file_path)
+    
+    # Create a thread pool with the specified number of threads
+    with ThreadPoolExecutor(max_workers=num_threads) as executor:
+        # Launch the search in each file
+        executor.map(lambda file: search_keyword_in_file(file, keywords, very_verbose=very_verbose, verbose=verbose), files_to_process)
+    
+    elapsed_time = time.time() - start_time
+    print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{elapsed_time:.2f} seconds")
+
+
 
 #====================================== Main ======================================
 def main():
@@ -338,6 +396,7 @@ def main():
         parser.add_argument("-o", "--output", help="Save the results to a specified text file")
         parser.add_argument('-e', '--exclude', metavar='', type=str, help='Extensions to ignore separated by commas', default='')
         parser.add_argument('-i', '--ignore', action="store_true", help='ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin')
+        parser.add_argument("-t", "--threads", type=int, help="Multi threading (Default 25). Works automatically with the -f argument. You need to provide -k argument(s). Optionals args allowed : -v -vv -i -e | Fast mode works only with -v -vv -k -i -e")
         args = parser.parse_args()
 
 
@@ -354,6 +413,10 @@ def main():
             print(f"{Fore.YELLOW}[!] {Fore.RED}[-r ROOT] or [-rf ROOTFILE] argument missing{Fore.YELLOW}\n")
             parser.print_usage()
             sys.exit(0)
+
+
+        print(f"{Fore.YELLOW}[!] Command executed : {' '.join(sys.argv)}\n")
+        
 
         if args.update:
             git_pull()
@@ -572,7 +635,9 @@ def main():
                 ignored_extensions = default_ignored_extensions 
                 
         very_verbose = args.very_verbose          
-                
+
+
+
         if args.root:
             if args.keywords or args.strict or args.regex:
                 print(f"{Fore.YELLOW}[!] Directory search for :")
@@ -586,12 +651,25 @@ def main():
                 if args.regex:
                     print(f"    {Fore.GREEN}[+] {Fore.RED}{args.regex} {Fore.GREEN}regex")
                 
+            
             print("")
             print(Fore.YELLOW + args.root) # Folder search -r
-            print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
-            print("")
             
+            
+            
+            if args.threads:
+                walk_through_directories(args.root, keywords=keywords, num_threads=args.threads, very_verbose=very_verbose, verbose=args.verbose, ignored_extensions=ignored_extensions)
+            else:
+                start_time = time.time()
+                print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+
+                print("")
+                elapsed_time = time.time() - start_time
+                print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{elapsed_time:.2f} seconds")
+                
         if args.rootfile:
+            if args.threads:
+                print(f"{Fore.RED}[!] --threads args detected ... Launching normal mode for -rf")
             if args.keywords or args.strict or args.regex:
                 print(f"{Fore.YELLOW}[!] File search for :")
                 
@@ -606,13 +684,16 @@ def main():
                 
             print("")        
             print(Fore.YELLOW + args.rootfile) # File search -r
+            start_time = time.time()
             print_tree("file!" + args.rootfile, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
-            print("") 
+            print("")
+            elapsed_time = time.time() - start_time
+            print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{elapsed_time:.2f} seconds")
                 
         if output_file:
             sys.stdout.close()
-
             
+
         print(f"\n{Fore.YELLOW}[!] End of search")
         
     except KeyboardInterrupt:
