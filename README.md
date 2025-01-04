@@ -11,7 +11,7 @@ The user is solely responsible for the use they make of this tool. It is underst
 
 SearchX is a Python-based script designed for keyword searches, data analysis, and penetration testing tasks within large databases, directories, or specific files. It supports various data formats and search methods, making it highly versatile for cybersecurity, OSINT, and investigative purposes.
 
-## Updates V1.2 :
+## Main update V1.2 :
 
 Adding a fast mode with multi-threaded CPU support.
 Example using the following command :
