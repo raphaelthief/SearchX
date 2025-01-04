@@ -51,7 +51,7 @@ banner = (
     f"       {Fore.GREEN}&%%%%*         {Fore.RED}########,       {Fore.GREEN}##       ##  ##       ##    ##  ##  ##  ##    #####    {Fore.RED}####\n"                 
     f"         {Fore.GREEN}%%%%%%(      {Fore.RED}##,              {Fore.GREEN}#####   ######    #####    ##      ##        ##  ##    {Fore.RED}##\n"                 
     f"           {Fore.GREEN}*%%%%%%%%%%{Fore.RED}#                    {Fore.GREEN}##  ##       ##  ##    ##      ##  ##    ##  ##   {Fore.RED}####\n"                 
-    f"                {Fore.GREEN}%%%%%%{Fore.RED}*               {Fore.GREEN}######    #####    #####   ####      ####    ###  ##  {Fore.RED}##  ##  {Fore.YELLOW}V1.1\n"                 
+    f"                {Fore.GREEN}%%%%%%{Fore.RED}*               {Fore.GREEN}######    #####    #####   ####      ####    ###  ##  {Fore.RED}##  ##  {Fore.YELLOW}V1.2\n"                 
     f"                      {Fore.RED}#{Fore.YELLOW}\n"                 
 )                                                                                     
    
