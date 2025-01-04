@@ -11,6 +11,25 @@ The user is solely responsible for the use they make of this tool. It is underst
 
 SearchX is a Python-based script designed for keyword searches, data analysis, and penetration testing tasks within large databases, directories, or specific files. It supports various data formats and search methods, making it highly versatile for cybersecurity, OSINT, and investigative purposes.
 
+## Updates V1.2 :
+
+Adding a fast mode with multi-threaded CPU support.
+Example using the following command :
+```
+searchx.py -r F:\Dumps\Leaked\OK\leaked -k exemple@gmail.com -t 50 -vv -i
+```
+
+Performance test on a folder containing 147 GB of files and subfolders (15 428 files, 2 041 folders) :
+
+- Normal mode : 1,806 seconds (30 minutes and 6 seconds)
+- Fast mode : 1,049 seconds (17 minutes and 29 seconds)
+
+
+![Fast mode](https://github.com/raphaelthief/SearchX/blob/main/Pictures/multi_threads.JPG "Fast mode")
+
+
+
+
 
 ## Key Features :
 
