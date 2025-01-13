@@ -51,7 +51,7 @@ banner = (
     f"       {Fore.GREEN}&%%%%*         {Fore.RED}########,       {Fore.GREEN}##       ##  ##       ##    ##  ##  ##  ##    #####    {Fore.RED}####\n"                 
     f"         {Fore.GREEN}%%%%%%(      {Fore.RED}##,              {Fore.GREEN}#####   ######    #####    ##      ##        ##  ##    {Fore.RED}##\n"                 
     f"           {Fore.GREEN}*%%%%%%%%%%{Fore.RED}#                    {Fore.GREEN}##  ##       ##  ##    ##      ##  ##    ##  ##   {Fore.RED}####\n"                 
-    f"                {Fore.GREEN}%%%%%%{Fore.RED}*               {Fore.GREEN}######    #####    #####   ####      ####    ###  ##  {Fore.RED}##  ##  {Fore.YELLOW}V1.2\n"                 
+    f"                {Fore.GREEN}%%%%%%{Fore.RED}*               {Fore.GREEN}######    #####    #####   ####      ####    ###  ##  {Fore.RED}##  ##  {Fore.YELLOW}V1.1\n"                 
     f"                      {Fore.RED}#{Fore.YELLOW}\n"                 
 )                                                                                     
    
@@ -358,7 +358,8 @@ def walk_through_directories(directory, keywords=None, num_threads=10, very_verb
         executor.map(lambda file: search_keyword_in_file(file, keywords, very_verbose=very_verbose, verbose=verbose), files_to_process)
     
     elapsed_time = time.time() - start_time
-    print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{elapsed_time:.2f} seconds")
+    formatted_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+    print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{formatted_time} ({elapsed_time:.2f} seconds)")
 
 
 
@@ -665,7 +666,8 @@ def main():
 
                 print("")
                 elapsed_time = time.time() - start_time
-                print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{elapsed_time:.2f} seconds")
+                formatted_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+                print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{formatted_time} ({elapsed_time:.2f} seconds)")
                 
         if args.rootfile:
             if args.threads:
@@ -688,7 +690,8 @@ def main():
             print_tree("file!" + args.rootfile, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
             print("")
             elapsed_time = time.time() - start_time
-            print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{elapsed_time:.2f} seconds")
+            formatted_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+            print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{formatted_time} ({elapsed_time:.2f} seconds)")
                 
         if output_file:
             sys.stdout.close()
