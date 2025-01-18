@@ -436,7 +436,7 @@ def main():
             print(f"{Fore.YELLOW}[+] Search for DNS & subdomains infos :\n    {Fore.GREEN}searchx.py --subdomain <ip or DNS>")
             print(f"{Fore.YELLOW}[+] Search for username infos :\n    {Fore.GREEN}searchx.py --username <username>")
             print(f"{Fore.YELLOW}[+] Search for Google Dorks :\n    {Fore.GREEN}searchx.py --dorks <search_query>")
-            print(f"{Fore.YELLOW}[+] Search for exploits :\n    {Fore.GREEN}searchx.py --exploit 'description' 'CVE-ID' 'port_number' | searchx.py --exploit 'eternalblue' | searchx.py --exploit 'eternalblue' '' '445'")
+            print(f"{Fore.YELLOW}[+] Search for exploits :\n    {Fore.GREEN}searchx.py --exploit 'description' 'CVE-ID' 'port_number' | searchx.py --exploit 'eternalblue' | searchx.py --exploit 'eternalblue' '' '445' | searchx.py --exploit '' 'CVE-2021-44228' ''")
             print(f"{Fore.YELLOW}[+] Search for CVE :\n    {Fore.GREEN}searchx.py --cve 'search_query' 'CVE_ID' | searchx.py --cve 'eternalblue' | searchx.py --cve '' 'CVE-2024_16738'")
             
             print(f"{Fore.YELLOW}    \n---------------------------------------------------------------------------\n{Fore.GREEN}")
