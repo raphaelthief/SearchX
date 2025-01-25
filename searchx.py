@@ -27,7 +27,9 @@ from Dependencies.virustotal import check_ip_with_virustotal
 from Dependencies.exploitfinder import initexploitdb, initialize_dorksdb, dorksearch
 from Dependencies.cvesearch import searchcve
 from Dependencies.whatweb import getwatweb
+from Dependencies.whatsapp import getwhatsappinfos
 from concurrent.futures import ThreadPoolExecutor
+
 
 # colorama
 from colorama import init, Fore, Style
@@ -547,7 +549,8 @@ def main():
                 check_ignorant(args.phone)
                 print(f"\n{Fore.YELLOW}----- Launching haveibeenzuckered.com api : {Fore.GREEN}https://haveibeenzuckered.com/{Fore.YELLOW} -----")
                 leaked(args.phone)
-                
+                phonesanitarize = args.phone.replace("+", "")
+                getwhatsappinfos(phonesanitarize)
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
                 sys.exit(0)
