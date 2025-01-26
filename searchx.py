@@ -10,6 +10,7 @@ from Dependencies.ignorant import check_ignorant
 from Dependencies.phone_format import basicinfos
 from Dependencies.scamsearch import scam
 from Dependencies.ghunt import ghunter
+from Dependencies.gitfive import gitfive_
 from Dependencies.fbleaked import leaked
 from Dependencies.leakcheck import leackcheck
 from Dependencies.proxynova import proxynova1
@@ -492,6 +493,9 @@ def main():
                 leackcheck(args.email)
                 scam(args.email)
                 
+                print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
+                gitfive_(args.email, "email")
+                
                 print(f"\n{Fore.YELLOW}----- Launching Ghunt : {Fore.GREEN}https://github.com/mxrch/GHunt{Fore.YELLOW} -----")
                 ghunter(args.email)
                 
@@ -519,6 +523,9 @@ def main():
                 print(f"[!] Checking dependencies ...")
                 blackbirdZ(args.username)
                 githubusername(args.username)
+                
+                print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
+                gitfive_(args.username, "username")
                 
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
