@@ -38,7 +38,7 @@ Performance test on a folder containing 147 GB of files and subfolders (15 428 f
 - Supports verbose (-v) and very verbose (-vv) output modes for detailed context.
 
 ### Specialized Search Functions :
-- Email analysis : Using tools like Holehe and Ghunt to search email-related data.
+- Email analysis : Using tools like Holehe, GitFive and Ghunt to search email-related data.
 - Username lookup : Integrates with Blackbird and GitHub tools.
 - IP analysis : Provides information through APIs such as Shodan and VirusTotal.
 - Password breach checks : Verifies passwords against breached databases.
@@ -96,3 +96,11 @@ python searchX.py --comb <keyword>
 ```
 ![Root](https://github.com/raphaelthief/SearchX/blob/main/Pictures/proxynova.JPG "proxynova")
 
+
+## Added tools (credits)
+
+- Ghunt https://github.com/mxrch/GHunt
+- GitFive https://github.com/mxrch/GitFive
+- Holehe https://github.com/megadose/holehe
+- BlackBird https://github.com/p1ngul1n0/blackbird
+- Ignorant https://github.com/megadose/ignorant
