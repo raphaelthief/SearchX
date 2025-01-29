@@ -18,7 +18,7 @@ def get_vulnerabilities(api_url):
 
 
 def display_results(vulnerabilities):
-    print(f"\n{Fore.YELLOW}--- Vulnerability list ---")
+    print(f"\n{Fore.YELLOW}--- Vulnerability list ---\n--------------------------")
     for i, vulnerability in enumerate(vulnerabilities['vulnerabilities']):
         severity = "Unknow"
         try:
@@ -36,7 +36,7 @@ def display_results(vulnerabilities):
         else:  # "Unknown" or any other severity
             color = Fore.WHITE
 
-        print(f"{Fore.GREEN}{i + 1}. {Fore.YELLOW}{vulnerability['cve']['id']} ({color}{severity}{Fore.YELLOW}) : {Fore.GREEN}{vulnerability['cve']['descriptions'][0]['value']}")
+        print(f"{Fore.RED}{i + 1}. {Fore.YELLOW}{vulnerability['cve']['id']} ({color}{severity}{Fore.YELLOW}) : {Fore.GREEN}{vulnerability['cve']['descriptions'][0]['value']}\n{Fore.YELLOW}--------------------------")
 
 
 def save_results(data, filename='vulnerabilities.json'):
