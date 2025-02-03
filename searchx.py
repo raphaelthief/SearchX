@@ -10,7 +10,6 @@ from Dependencies.ignorant import check_ignorant
 from Dependencies.phone_format import basicinfos
 from Dependencies.scamsearch import scam
 from Dependencies.ghunt import ghunter
-from Dependencies.gitfive import gitfive_
 from Dependencies.fbleaked import leaked
 from Dependencies.leakcheck import leackcheck
 from Dependencies.proxynova import proxynova1
@@ -28,9 +27,8 @@ from Dependencies.virustotal import check_ip_with_virustotal
 from Dependencies.exploitfinder import initexploitdb, initialize_dorksdb, dorksearch
 from Dependencies.cvesearch import searchcve
 from Dependencies.whatweb import getwatweb
-from Dependencies.whatsapp import getwhatsappinfos
+from Dependencies.twitter import tweetwho
 from concurrent.futures import ThreadPoolExecutor
-
 
 # colorama
 from colorama import init, Fore, Style
@@ -401,6 +399,9 @@ def main():
         parser.add_argument('-e', '--exclude', metavar='', type=str, help='Extensions to ignore separated by commas', default='')
         parser.add_argument('-i', '--ignore', action="store_true", help='ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin')
         parser.add_argument("-t", "--threads", type=int, help="Multi threading (Default 25). Works automatically with the -f argument. You need to provide -k argument(s). Optionals args allowed : -v -vv -i -e | Fast mode works only with -v -vv -k -i -e")
+        parser.add_argument("--tweet", help="Find tweets, posts, etc... by usernames even if the profile was deleted (wayback urls)")
+        
+        
         args = parser.parse_args()
 
 
@@ -439,7 +440,7 @@ def main():
             print(f"{Fore.YELLOW}[+] Search for DNS & subdomains infos :\n    {Fore.GREEN}searchx.py --subdomain <ip or DNS>")
             print(f"{Fore.YELLOW}[+] Search for username infos :\n    {Fore.GREEN}searchx.py --username <username>")
             print(f"{Fore.YELLOW}[+] Search for Google Dorks :\n    {Fore.GREEN}searchx.py --dorks <search_query>")
-            print(f"{Fore.YELLOW}[+] Search for exploits :\n    {Fore.GREEN}searchx.py --exploit 'description' 'CVE-ID' 'port_number' | searchx.py --exploit 'eternalblue' | searchx.py --exploit 'eternalblue' '' '445' | searchx.py --exploit '' 'CVE-2021-44228' ''")
+            print(f"{Fore.YELLOW}[+] Search for exploits :\n    {Fore.GREEN}searchx.py --exploit 'description' 'CVE-ID' 'port_number' | searchx.py --exploit 'eternalblue' | searchx.py --exploit 'eternalblue' '' '445'")
             print(f"{Fore.YELLOW}[+] Search for CVE :\n    {Fore.GREEN}searchx.py --cve 'search_query' 'CVE_ID' | searchx.py --cve 'eternalblue' | searchx.py --cve '' 'CVE-2024_16738'")
             
             print(f"{Fore.YELLOW}    \n---------------------------------------------------------------------------\n{Fore.GREEN}")
@@ -458,6 +459,11 @@ def main():
         output_file = None
         if args.output:
             sys.stdout = TeeOutput(args.output)
+
+
+        if args.tweet:
+            print(f"{Fore.YELLOW}[!] Searching twitter(X) posts [{Fore.GREEN}{args.tweet}{Fore.YELLOW}]")
+            tweetwho(args.tweet)
 
 
         if args.skype:
@@ -493,9 +499,6 @@ def main():
                 leackcheck(args.email)
                 scam(args.email)
                 
-                print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
-                gitfive_(args.email, "email")
-                
                 print(f"\n{Fore.YELLOW}----- Launching Ghunt : {Fore.GREEN}https://github.com/mxrch/GHunt{Fore.YELLOW} -----")
                 ghunter(args.email)
                 
@@ -523,9 +526,6 @@ def main():
                 print(f"[!] Checking dependencies ...")
                 blackbirdZ(args.username)
                 githubusername(args.username)
-                
-                print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
-                gitfive_(args.username, "username")
                 
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
@@ -556,8 +556,7 @@ def main():
                 check_ignorant(args.phone)
                 print(f"\n{Fore.YELLOW}----- Launching haveibeenzuckered.com api : {Fore.GREEN}https://haveibeenzuckered.com/{Fore.YELLOW} -----")
                 leaked(args.phone)
-                phonesanitarize = args.phone.replace("+", "")
-                getwhatsappinfos(phonesanitarize)
+                
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
                 sys.exit(0)
