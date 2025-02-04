@@ -29,6 +29,8 @@ from Dependencies.cvesearch import searchcve
 from Dependencies.whatweb import getwatweb
 from Dependencies.twitter import tweetwho
 from concurrent.futures import ThreadPoolExecutor
+from Dependencies.whatsapp import getwhatsappinfos
+from Dependencies.gitfive import gitfive_
 
 # colorama
 from colorama import init, Fore, Style
@@ -498,7 +500,10 @@ def main():
                 
                 leackcheck(args.email)
                 scam(args.email)
-                
+
+                print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
+                gitfive_(args.email, "email")
+
                 print(f"\n{Fore.YELLOW}----- Launching Ghunt : {Fore.GREEN}https://github.com/mxrch/GHunt{Fore.YELLOW} -----")
                 ghunter(args.email)
                 
@@ -526,7 +531,10 @@ def main():
                 print(f"[!] Checking dependencies ...")
                 blackbirdZ(args.username)
                 githubusername(args.username)
-                
+
+                print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
+                gitfive_(args.username, "username")
+
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
 
@@ -556,6 +564,9 @@ def main():
                 check_ignorant(args.phone)
                 print(f"\n{Fore.YELLOW}----- Launching haveibeenzuckered.com api : {Fore.GREEN}https://haveibeenzuckered.com/{Fore.YELLOW} -----")
                 leaked(args.phone)
+                
+                phonesanitarize = args.phone.replace("+", "")
+                getwhatsappinfos(phonesanitarize)
                 
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
