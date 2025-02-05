@@ -31,6 +31,7 @@ from Dependencies.twitter import tweetwho
 from concurrent.futures import ThreadPoolExecutor
 from Dependencies.whatsapp import getwhatsappinfos
 from Dependencies.gitfive import gitfive_
+from Dependencies.email_finder import find_emails
 
 # colorama
 from colorama import init, Fore, Style
@@ -402,6 +403,7 @@ def main():
         parser.add_argument('-i', '--ignore', action="store_true", help='ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin')
         parser.add_argument("-t", "--threads", type=int, help="Multi threading (Default 25). Works automatically with the -f argument. You need to provide -k argument(s). Optionals args allowed : -v -vv -i -e | Fast mode works only with -v -vv -k -i -e")
         parser.add_argument("--tweet", help="Find tweets, posts, etc... by usernames even if the profile was deleted (wayback urls)")
+        parser.add_argument("-ef", "--emailfinder", help="Find valid email with firstname lastname & domain (ex : 'john doe gmail.com')")
         
         
         args = parser.parse_args()
@@ -467,6 +469,15 @@ def main():
             print(f"{Fore.YELLOW}[!] Searching twitter(X) posts [{Fore.GREEN}{args.tweet}{Fore.YELLOW}]")
             tweetwho(args.tweet)
 
+
+        if args.emailfinder:
+            try:
+                first_name, last_name, domain = args.emailfinder.split()
+                print(f"{Fore.YELLOW}[!] Searching valid emails for [{Fore.GREEN}{args.emailfinder}{Fore.YELLOW}]")
+                find_emails(first_name, last_name, domain)
+            except ValueError:
+                print(f"{Fore.RED}Invalid input format. Please provide arguments in the format : {Fore.YELLOW}'firstname lastname domain'")
+            
 
         if args.skype:
             try:
