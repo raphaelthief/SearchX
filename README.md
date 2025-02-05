@@ -105,3 +105,4 @@ python searchX.py --comb <keyword>
 - BlackBird https://github.com/p1ngul1n0/blackbird
 - Ignorant https://github.com/megadose/ignorant
 - Passhunt https://github.com/Viralmaniar/Passhunt
+- .DS_Store-parser https://github.com/hanwenzhu/.DS_Store-parser
