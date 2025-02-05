@@ -10,3 +10,10 @@ requests==2.31.0
 urllib3==2.2.3
 trio==0.19.0
 prettytable==3.7.0
+PyPDF2
+python-docx
+Pillow
+mutagen
+pymediainfo
+PyMuPDF
+openpyxl
