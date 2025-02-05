@@ -33,6 +33,7 @@ from Dependencies.whatsapp import getwhatsappinfos
 from Dependencies.gitfive import gitfive_
 from Dependencies.email_finder import find_emails
 from Dependencies.vendorpassword import defaultpass
+from Dependencies.metadatas import showme
 
 # colorama
 from colorama import init, Fore, Style
@@ -56,7 +57,7 @@ banner = (
     f"       {Fore.GREEN}&%%%%*         {Fore.RED}########,       {Fore.GREEN}##       ##  ##       ##    ##  ##  ##  ##    #####    {Fore.RED}####\n"                 
     f"         {Fore.GREEN}%%%%%%(      {Fore.RED}##,              {Fore.GREEN}#####   ######    #####    ##      ##        ##  ##    {Fore.RED}##\n"                 
     f"           {Fore.GREEN}*%%%%%%%%%%{Fore.RED}#                    {Fore.GREEN}##  ##       ##  ##    ##      ##  ##    ##  ##   {Fore.RED}####\n"                 
-    f"                {Fore.GREEN}%%%%%%{Fore.RED}*               {Fore.GREEN}######    #####    #####   ####      ####    ###  ##  {Fore.RED}##  ##  {Fore.YELLOW}V1.1\n"                 
+    f"                {Fore.GREEN}%%%%%%{Fore.RED}*               {Fore.GREEN}######    #####    #####   ####      ####    ###  ##  {Fore.RED}##  ##  {Fore.YELLOW}V1.2\n"                 
     f"                      {Fore.RED}#{Fore.YELLOW}\n"                 
 )                                                                                     
    
@@ -406,6 +407,7 @@ def main():
         parser.add_argument("--tweet", help="Find tweets, posts, etc... by usernames even if the profile was deleted (wayback urls)")
         parser.add_argument("-ef", "--emailfinder", help="Find valid email with firstname lastname & domain (ex : 'john doe gmail.com')")
         parser.add_argument("-def", "--defaultpassword", help="Find default devices passwords")
+        parser.add_argument("-meta", "--metadatas", help="Search for metadas on DS_Store, pdf, docx, etc .... (ex : --metadatas 'E:\something\some folder\.DS_store'")
         
         
         args = parser.parse_args()
@@ -482,10 +484,16 @@ def main():
             
             
         if args.defaultpassword:
-            print(f"{Fore.YELLOW}[!] Searching default password for [{Fore.GREEN}{args.defaultpassword}{Fore.YELLOW}]\n{Fore.YELLOW}------------------{Fore.GREEN}")
+            print(f"{Fore.YELLOW}[!] Searching default password for [{Fore.GREEN}{args.defaultpassword}{Fore.YELLOW}] (https://cirt.net/)\n{Fore.YELLOW}------------------{Fore.GREEN}")
             defaultpass(args.defaultpassword)
             
-            
+
+        if args.metadatas:
+            print(f"{Fore.YELLOW}[!] Searching for metadatas to file [{Fore.GREEN}{args.metadatas}{Fore.YELLOW}]\n")
+            showme(args.metadatas)
+
+
+
 
         if args.skype:
             try:
