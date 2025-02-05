@@ -1,7 +1,7 @@
 # Credits to : https://github.com/Viralmaniar/Passhunt/blob/master/passhunt.py
 # Part of the code taken from Viral Maniar 
 
-import requests, urllib
+import requests, urllib, csv
 import bs4 as bs
 from bs4 import BeautifulSoup
 
@@ -36,3 +36,46 @@ def defaultpass(vendor):
     else:
         for table in tables:  # Modif here (more beautiful form me)
             print(formatTable(table) + f"{Fore.YELLOW}------------------{Fore.GREEN}")
+
+
+    ################################
+    print(f"\n\n{Fore.YELLOW}[!] Searching default password for [{Fore.GREEN}{vendor}{Fore.YELLOW}] (https://many-passwords.github.io/)")
+    defaultpass_wifi(vendor) # Go for IOT default passwords
+
+
+def defaultpass_wifi(vendor):
+    url = "https://raw.githubusercontent.com/many-passwords/many-passwords/main/passwords.csv"
+    response = requests.get(url)
+    found_match = False
+    
+    if response.status_code == 200:
+        content = response.text.splitlines()
+
+        reader = csv.reader(content)
+        next(reader)  
+
+        for row in reader:
+            title = row[0]  
+            model = row[1]  
+            version = row[2]  
+            access_type = row[3]  
+            username = row[4]  
+            password = row[5]  
+            privileges = row[6]  
+
+            if title == vendor:
+                found_match = True
+                print("")
+                print(f"{Fore.GREEN}[+] {Fore.CYAN}{title}\n{Fore.YELLOW}------------------")
+                print(f"{Fore.GREEN}Model       : {Fore.YELLOW}{model}")
+                print(f"{Fore.GREEN}Version     : {Fore.YELLOW}{version}")
+                print(f"{Fore.GREEN}Access type : {Fore.YELLOW}{access_type}")
+                print(f"{Fore.GREEN}Username    : {Fore.RED}{username}")
+                print(f"{Fore.GREEN}Password    : {Fore.RED}{password}")
+                print(f"{Fore.GREEN}Privileges  : {Fore.YELLOW}{privileges}") 
+                                
+    else:
+        print(f"{Fore.RED}[-] Error : {response.status_code}")
+
+    if not found_match:
+        print(f"{Fore.YELLOW}------------------\n{Fore.RED}[-] {Fore.GREEN}Nothing found for vendor : {Fore.RED}{vendor}\n{Fore.YELLOW}------------------{Fore.GREEN}")
