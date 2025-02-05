@@ -104,3 +104,4 @@ python searchX.py --comb <keyword>
 - Holehe https://github.com/megadose/holehe
 - BlackBird https://github.com/p1ngul1n0/blackbird
 - Ignorant https://github.com/megadose/ignorant
+- Passhunt https://github.com/Viralmaniar/Passhunt
