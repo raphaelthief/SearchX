@@ -34,6 +34,7 @@ from Dependencies.gitfive import gitfive_
 from Dependencies.email_finder import find_emails
 from Dependencies.vendorpassword import defaultpass
 from Dependencies.metadatas import showme
+from Dependencies.drive import drivehunt
 
 # colorama
 from colorama import init, Fore, Style
@@ -408,6 +409,7 @@ def main():
         parser.add_argument("-ef", "--emailfinder", help="Find valid email with firstname lastname & domain (ex : 'john doe gmail.com')")
         parser.add_argument("-def", "--defaultpassword", help="Find default devices passwords")
         parser.add_argument("-meta", "--metadatas", help="Search for metadas on DS_Store, pdf, docx, etc .... (ex : --metadatas 'E:\something\some folder\.DS_store'")
+        parser.add_argument("-dh", "--drivehunt", help="Search for metadas on Google Drive document with xeuledoc(ex : -dh https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)")
         
         
         args = parser.parse_args()
@@ -493,7 +495,10 @@ def main():
             showme(args.metadatas)
 
 
-
+        if args.drivehunt:
+            print(f"{Fore.YELLOW}[!] Searching for metadatas to drive document [{Fore.GREEN}{args.drivehunt}{Fore.YELLOW}] (https://github.com/Malfrats/xeuledoc)\n")
+            drivehunt(args.drivehunt)
+            
 
         if args.skype:
             try:
