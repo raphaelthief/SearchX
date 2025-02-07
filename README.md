@@ -106,3 +106,4 @@ python searchX.py --comb <keyword>
 - Ignorant https://github.com/megadose/ignorant
 - Passhunt https://github.com/Viralmaniar/Passhunt
 - .DS_Store-parser https://github.com/hanwenzhu/.DS_Store-parser
+- xeuledoc https://github.com/Malfrats/xeuledoc
