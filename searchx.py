@@ -35,6 +35,7 @@ from Dependencies.email_finder import find_emails
 from Dependencies.vendorpassword import defaultpass
 from Dependencies.metadatas import showme
 from Dependencies.drive import drivehunt
+from Dependencies.scamtel import getscamtel
 
 # colorama
 from colorama import init, Fore, Style
@@ -599,6 +600,11 @@ def main():
                 
                 phonesanitarize = args.phone.replace("+", "")
                 getwhatsappinfos(phonesanitarize)
+                if args.phone[3] == '0':
+                    args.phone = args.phone[:3] + args.phone[4:]
+                
+                getscamtel(args.phone)
+                
                 
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
