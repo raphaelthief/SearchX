@@ -43,6 +43,7 @@ def check_ip_with_virustotal(ip, api_key):
             "clean": Fore.GREEN,
             "suspicious": Fore.RED,
             "malicious": Fore.RED,
+            "malware": Fore.RED,
             "unrated": Fore.WHITE  
         }        
         
