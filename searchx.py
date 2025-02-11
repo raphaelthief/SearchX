@@ -1,5 +1,5 @@
 # Of course, you're not going to use this tool to sift through ransomware leaks or any other crap. Don't be stupid and respect the law !
-import os, re, argparse, json, requests, urllib3, sys, time
+import os, re, argparse, json, requests, urllib3, sys, time, whois
 
 # Check dependencies
 import subprocess
@@ -379,7 +379,7 @@ def main():
         parser = argparse.ArgumentParser(description=f"{Fore.GREEN}Search{Fore.RED}X{Fore.GREEN} - {Fore.BLUE}Advenced data finder{Fore.GREEN}")
         parser.add_argument("-usage", "--usage", action="store_true", help="Get usages exemple")
         parser.add_argument("-u", "--update", action="store_true", help="get updates")
-        parser.add_argument('--ip',  help='search infos through ip (iknowwhatyoudownload)')
+        parser.add_argument('--ip',  help='search infos through ip, domain, ... (iknowwhatyoudownload, whois, leakix, ...)')
         parser.add_argument('--subdomain',  help='search subdomain of a spoecific host (leakix request)')
         parser.add_argument('--comb',  help='search through the COMB leak via an API (proxynova)')
         parser.add_argument('--skype',  help='search through skype (skypesearch)')
@@ -620,6 +620,25 @@ def main():
                 leakXx(args.ip)
                 getwatweb(args.ip)
                 
+                # WHOIS
+                print(f"\n{Fore.YELLOW}[!] whois search")
+                print(f"{Fore.GREEN}[+] {Fore.YELLOW}Short output")
+                try:
+                    response = whois.whois(args.ip)
+                    
+                    for key, value in response.items():
+                        print(f"{Fore.YELLOW}{key} : {Fore.GREEN}{value}")
+                
+                    
+                    if hasattr(response, "text"):
+                        print(f"\n{Fore.GREEN}[+] {Fore.YELLOW}Large output aviable{Fore.GREEN}")
+                        print(response.text)
+    
+                except Exception as e:
+                    print(f"\n{Fore.RED}[!] Error : {e}")
+
+                print(f"{Fore.YELLOW}--------------------------------------------------")
+    
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
 
