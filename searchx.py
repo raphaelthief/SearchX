@@ -36,6 +36,7 @@ from Dependencies.vendorpassword import defaultpass
 from Dependencies.metadatas import showme
 from Dependencies.drive import drivehunt
 from Dependencies.scamtel import getscamtel
+from Dependencies.crawl_emails_phone import get_emails_phones
 
 # colorama
 from colorama import init, Fore, Style
@@ -411,13 +412,12 @@ def main():
         parser.add_argument("-def", "--defaultpassword", help="Find default devices passwords")
         parser.add_argument("-meta", "--metadatas", help="Search for metadas on DS_Store, pdf, docx, etc .... (ex : --metadatas 'E:\something\some folder\.DS_store'")
         parser.add_argument("-dh", "--drivehunt", help="Search for metadas on Google Drive document with xeuledoc(ex : -dh https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)")
-        
+        parser.add_argument("--crawl", help="Search for stored infos (emails and phone numbers) in a webpage")
         
         args = parser.parse_args()
 
 
         keywords = args.keywords.split(",") if args.keywords else None
-
 
 
         if len(sys.argv) == 1:
@@ -500,6 +500,11 @@ def main():
             print(f"{Fore.YELLOW}[!] Searching for metadatas to drive document [{Fore.GREEN}{args.drivehunt}{Fore.YELLOW}] (https://github.com/Malfrats/xeuledoc)\n")
             drivehunt(args.drivehunt)
             
+
+        if args.crawl:
+            print(f"{Fore.YELLOW}[!] Searching for emails and phone numbers [{Fore.GREEN}{args.crawl}{Fore.YELLOW}]")
+            get_emails_phones(args.crawl)
+
 
         if args.skype:
             try:
