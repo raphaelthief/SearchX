@@ -30,3 +30,8 @@ patoolib
 xlrd
 rarfile
 python-whois
+fitz
+frontend
+tools
+patool
+cloudscraper
