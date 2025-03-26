@@ -393,10 +393,16 @@ def main():
         parser.add_argument('--dorks',  help='Search for Google Dorks (--dorks "index off")')
         parser.add_argument('--cve', nargs='*', help='Search for cve (--cve "search query" "CVE-ID")')
         parser.add_argument('-p', '--password',  help='check how many times this password has been leaked (breachdirectory)')
+        parser.add_argument("--tweet", help="Find tweets, posts, etc... by usernames even if the profile was deleted (wayback urls)")
+        parser.add_argument("-ef", "--emailfinder", help="Find valid email with firstname lastname & domain (ex : 'john doe gmail.com')")
+        parser.add_argument("-def", "--defaultpassword", help="Find default devices passwords")
+        parser.add_argument("-meta", "--metadatas", help=r"Search for metadas on DS_Store, pdf, docx, etc .... (ex : --metadatas 'E:\something\some folder\.DS_store'")
+        parser.add_argument("-dh", "--drivehunt", help=r"Search for metadas on Google Drive document with xeuledoc(ex : -dh https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)")
+        parser.add_argument("--crawl", help="Search for stored infos (emails and phone numbers) in a webpage")
         parser.add_argument("-r", "--root", help="Root directory path to explore")#, required=True) # aesthetic bug fix
         parser.add_argument("-rf", "--rootfile", help="Specific file to explore (only one file)")#, required=True) # aesthetic bug fix
         parser.add_argument("-k", "--keywords", help="Keywords to search for in file names (separated by commas)")
-        parser.add_argument("-x", "--regex", help="Regular expression to search for in file names. Example for a keyword followed by 3 digits: abc\d{3})")
+        parser.add_argument("-x", "--regex", help=r"Regular expression to search for in file names. Example for a keyword followed by 3 digits: abc\d{3})")
         parser.add_argument("-kx", "--strict", help="Search for an exact keyword, ensuring it is preceded by specific characters (':', ' ', ',' or start of the line), ensuring no partial matches")
         parser.add_argument("-d", "--folders-only", action="store_true", help="Display only folders")
         parser.add_argument("-dv", "--folders-verbose", action="store_true", help="Display fullpath folders")
@@ -407,12 +413,7 @@ def main():
         parser.add_argument('-e', '--exclude', metavar='', type=str, help='Extensions to ignore separated by commas', default='')
         parser.add_argument('-i', '--ignore', action="store_true", help='ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin')
         parser.add_argument("-t", "--threads", type=int, help="Multi threading (Default 25). Works automatically with the -f argument. You need to provide -k argument(s). Optionals args allowed : -v -vv -i -e | Fast mode works only with -v -vv -k -i -e")
-        parser.add_argument("--tweet", help="Find tweets, posts, etc... by usernames even if the profile was deleted (wayback urls)")
-        parser.add_argument("-ef", "--emailfinder", help="Find valid email with firstname lastname & domain (ex : 'john doe gmail.com')")
-        parser.add_argument("-def", "--defaultpassword", help="Find default devices passwords")
-        parser.add_argument("-meta", "--metadatas", help="Search for metadas on DS_Store, pdf, docx, etc .... (ex : --metadatas 'E:\something\some folder\.DS_store'")
-        parser.add_argument("-dh", "--drivehunt", help="Search for metadas on Google Drive document with xeuledoc(ex : -dh https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)")
-        parser.add_argument("--crawl", help="Search for stored infos (emails and phone numbers) in a webpage")
+
         
         args = parser.parse_args()
 
@@ -458,7 +459,7 @@ def main():
             
             print(f"{Fore.YELLOW}[+] Search only 'password' keyword :\n    {Fore.GREEN}searchx.py -r C:/users -k password")
             print(f"{Fore.YELLOW}[+] Search for the keywords 'pass', 'test', and 'hello' in full path, excluding files with extensions '.zip' and '.rar' :\n    {Fore.GREEN}searchx.py -r C:/users -k password,test,hello -dv -e .zip,.rar")
-            print(f"{Fore.YELLOW}[+] Search for the regex 'testXXX' where XXX represents numbers :\n    {Fore.GREEN}searchx.py -r C:/users -x " + "test\d{3}")
+            print(f"{Fore.YELLOW}[+] Search for the regex 'testXXX' where XXX represents numbers :\n    {Fore.GREEN}searchx.py -r C:/users -x " + r"test\d{3}")
             print(f"{Fore.YELLOW}[+] Show full path folders only :\n    {Fore.GREEN}searchx.py -r C:/users -d -dv")
             print(f"{Fore.YELLOW}[+] Display the full path of folders containing the keywords 'password' and 'test', along with all text where these keywords are found in line, while ignoring default extensions :\n    {Fore.GREEN}searchx.py -r C:/users -k password,test -dv -i -vv")
             print(f"{Fore.YELLOW}[+] Search through one file :\n    {Fore.GREEN}searchx.py -rf C:/users/file.txt -k <keyword> -vv")
