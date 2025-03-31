@@ -6,7 +6,6 @@ from colorama import init, Fore, Style
 
 init() # Init colorama
 
-
 def getscamtel(phone):
     print(f"\n{Fore.YELLOW}[!] scamtel rate")
     url_get_cookies = "https://fr.scamtel.com/"
@@ -112,8 +111,3 @@ def getscamtel(phone):
     else:
         print(f"{Fore.RED}Request error : {response_get_redirect.status_code}")
         return
-
-
-
-
-getscamtel("+33644682084")
