@@ -37,6 +37,7 @@ from Dependencies.metadatas import showme
 from Dependencies.drive import drivehunt
 from Dependencies.scamtel import getscamtel
 from Dependencies.crawl_emails_phone import get_emails_phones
+from Dependencies.lydia import proceed
 
 # colorama
 from colorama import init, Fore, Style
@@ -607,10 +608,15 @@ def main():
                 phonesanitarize = args.phone.replace("+", "")
                 getwhatsappinfos(phonesanitarize)
                 if args.phone[3] == '0':
-                    args.phone = args.phone[:3] + args.phone[4:]
+                    phone_format = args.phone[:3] + args.phone[4:]
                 
-                getscamtel(args.phone)
+                getscamtel(phone_format)
                 
+                next_action = input(f"\n{Fore.YELLOW}[!] {Fore.RED}Exploiting Lydia misconfiguration may notify the user anonymously. Do you want to proceed ? {Fore.YELLOW}(y/n) : {Fore.GREEN}")
+                if next_action.lower() == "y":  
+                    proceed(args.phone)
+                else:
+                    print(f"{Fore.YELLOW}[!] Skipping Lydia checks...")
                 
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
