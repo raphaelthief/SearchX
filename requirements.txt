@@ -36,3 +36,4 @@ tools
 patool
 cloudscraper
 pymupdf
+ignorant
