@@ -609,7 +609,9 @@ def main():
                 getwhatsappinfos(phonesanitarize)
                 if args.phone[3] == '0':
                     phone_format = args.phone[:3] + args.phone[4:]
-                
+                else:
+                    phone_format = args.phone
+                    
                 getscamtel(phone_format)
                 
                 next_action = input(f"\n{Fore.YELLOW}[!] {Fore.RED}Exploiting Lydia misconfiguration may notify the user anonymously. Do you want to proceed ? {Fore.YELLOW}(y/n) : {Fore.GREEN}")
