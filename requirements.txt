@@ -37,3 +37,4 @@ patool
 cloudscraper
 pymupdf
 ignorant
+pdfplumber
