@@ -1,8 +1,11 @@
 # Of course, you're not going to use this tool to sift through ransomware leaks or any other crap. Don't be stupid and respect the law !
-import os, re, argparse, json, requests, urllib3, sys, time, whois
+import os, re, argparse, json, requests, urllib3, sys, time, whois, pdfplumber 
+from pathlib import Path
 
 # Check dependencies
 import subprocess
+import logging
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 # dependencies
 from Dependencies.holehe import check_holehe
@@ -123,18 +126,18 @@ def git_pull():
 
 
 #====================================== Local Search ======================================
-def search_regex(file_path, regex, strict=None):
+def search_regex(text, regex, strict=None):
     matches = []
 
     if strict is not None:
         regex = rf'(?:^|[\s,:])({re.escape(strict)})\b'
         #regex = rf'\b{strict}\b'
 
-    with open(file_path, 'r', encoding='utf-8', errors='ignore') as file:
-        for line_number, line in enumerate(file, start=1):
-            if re.search(regex, line):
-                matches.append((line_number, line.strip()))
+    for line_number, line in enumerate(text.split('\n'), start=1):  
+        if re.search(regex, line):
+            matches.append((line_number, line.strip()))
     return matches
+    
     
 dirfileonly = [""]
 def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, strict=None, folders_only=False, files_only=False, verbose=False, ignored_extensions=None, very_verbose=False, folders_verbose=None):
@@ -143,8 +146,18 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
     if "file!" in directory:
         full_path = directory.replace("file!", "")
         if keywords or regex or strict:
-            with open(full_path, 'r', encoding='utf-8', errors='ignore') as file:
             
+            lines = []
+            is_pdf = full_path.lower().endswith('.pdf')
+
+            if is_pdf:
+                with pdfplumber.open(full_path) as pdf:
+                    for page in pdf.pages:
+                        text = page.extract_text()
+                        if text:
+                            lines.extend(text.split('\n'))
+                            
+                                        
                 if not very_verbose and not verbose:
                     if keywords:
                         
@@ -154,7 +167,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                             print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
                         
                     if regex or strict:
-                        matches = search_regex(full_path, regex, strict)
+                        matches = search_regex('\n'.join(lines), regex, strict)
                         if strict:
                             regex = strict
 
@@ -165,7 +178,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                 print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
                     
                 if verbose and not very_verbose:
-                    for line_number, line in enumerate(file, start=1):
+                    for line_number, line in enumerate(lines, start=1):    
                         if keywords:
                             for keyword in keywords:
                                 if keyword.lower() in line.lower():
@@ -175,7 +188,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                         print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                     
                     if regex or strict:
-                        matches = search_regex(full_path, regex, strict)
+                        matches = search_regex('\n'.join(lines), regex, strict)
                         if strict:
                             regex = strict
                             
@@ -186,7 +199,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                 print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                             
                 if very_verbose:
-                    for line_number, line in enumerate(file, start=1):
+                    for line_number, line in enumerate(lines, start=1):    
                         if keywords:
                             for keyword in keywords:
                                 if keyword.lower() in line.lower():
@@ -199,7 +212,79 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                         print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
                                       
                     if regex or strict:
-                        matches = search_regex(full_path, regex, strict)
+                        matches = search_regex('\n'.join(lines), regex, strict)
+                        if strict:
+                            regex = strict
+                            
+                        for line_number, line in matches:
+                            if files_only:
+                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                            else:    
+                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                           
+                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
+                                              
+                            
+                            
+            else:
+                with open(full_path, 'r', encoding='utf-8', errors='ignore') as file:
+                    lines = file.readlines()
+
+                if not very_verbose and not verbose:
+                    if keywords:
+                        
+                        if files_only:
+                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                        else:    
+                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+                        
+                    if regex or strict:
+                        matches = search_regex('\n'.join(lines), regex, strict)
+                        if strict:
+                            regex = strict
+
+                        for line in matches:
+                            if files_only:
+                                print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                            else:    
+                                print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+                    
+                if verbose and not very_verbose:
+                    for line_number, line in enumerate(lines, start=1):    
+                        if keywords:
+                            for keyword in keywords:
+                                if keyword.lower() in line.lower():
+                                    if files_only:
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                    else:
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                    
+                    if regex or strict:
+                        matches = search_regex('\n'.join(lines), regex, strict)
+                        if strict:
+                            regex = strict
+                            
+                        for line_number, line in matches:
+                            if files_only:
+                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                            else:    
+                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                            
+                if very_verbose:
+                    for line_number, line in enumerate(lines, start=1):    
+                        if keywords:
+                            for keyword in keywords:
+                                if keyword.lower() in line.lower():
+                                    if files_only:
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                    else:    
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                   
+                                    if very_verbose:
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
+                                      
+                    if regex or strict:
+                        matches = search_regex('\n'.join(lines), regex, strict)
                         if strict:
                             regex = strict
                             
@@ -215,7 +300,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
             print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
 
     else:
-     
+        
         try:
             items = os.listdir(directory)
         except PermissionError:
@@ -235,14 +320,23 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                     else:
                         print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{full_path}")
                         
-                if (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):#if not files_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
+                if (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)): #if not files_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
                     print_tree(full_path, depth + 1, keywords, regex, color, strict, folders_only, files_only, verbose, ignored_extensions, very_verbose, folders_verbose)
             else:
                 if not folders_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
                     
                     if keywords or regex or strict:
-                        with open(full_path, 'r', encoding='utf-8', errors='ignore') as file:
-                        
+
+                        lines = []
+                        is_pdf = full_path.lower().endswith('.pdf')
+
+                        if is_pdf:
+                            with pdfplumber.open(full_path) as pdf:
+                                for page in pdf.pages:
+                                    text = page.extract_text()
+                                    if text:
+                                        lines.extend(text.split('\n'))
+
                             if not very_verbose and not verbose:
                                 if keywords:
                                     
@@ -252,7 +346,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                         print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
                                     
                                 if regex or strict:
-                                    matches = search_regex(full_path, regex, strict)
+                                    matches = search_regex('\n'.join(lines), regex, strict)
                                     if strict:
                                         regex = strict
 
@@ -263,7 +357,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                             print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
                                 
                             if verbose and not very_verbose:
-                                for line_number, line in enumerate(file, start=1):
+                                for line_number, line in enumerate(lines, start=1):
                                     if keywords:
                                         for keyword in keywords:
                                             if keyword.lower() in line.lower():
@@ -273,7 +367,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                                     print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                                 
                                 if regex or strict:
-                                    matches = search_regex(full_path, regex, strict)
+                                    matches = search_regex('\n'.join(lines), regex, strict)
                                     if strict:
                                         regex = strict
                                         
@@ -284,7 +378,7 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                             print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                         
                             if very_verbose:
-                                for line_number, line in enumerate(file, start=1):
+                                for line_number, line in enumerate(lines, start=1):
                                     if keywords:
                                         for keyword in keywords:
                                             if keyword.lower() in line.lower():
@@ -297,7 +391,79 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                                     print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
                                                   
                                 if regex or strict:
-                                    matches = search_regex(full_path, regex, strict)
+                                    matches = search_regex('\n'.join(lines), regex, strict)
+                                    if strict:
+                                        regex = strict
+                                        
+                                    for line_number, line in matches:
+                                        if files_only:
+                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                        else:    
+                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                       
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
+                                                
+
+                        else:
+                            with open(full_path, 'r', encoding='utf-8', errors='ignore') as file:
+                                lines = file.readlines()
+                        
+                            if not very_verbose and not verbose:
+                                if keywords:
+                                    
+                                    if files_only:
+                                        print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                                    else:    
+                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+                                    
+                                if regex or strict:
+                                    matches = search_regex('\n'.join(lines), regex, strict)
+                                    if strict:
+                                        regex = strict
+
+                                    for line in matches:
+                                        if files_only:
+                                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                                        else:    
+                                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+                                
+                            if verbose and not very_verbose:
+                                for line_number, line in enumerate(lines, start=1):
+                                    if keywords:
+                                        for keyword in keywords:
+                                            if keyword.lower() in line.lower():
+                                                if files_only:
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                                else:
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                                
+                                if regex or strict:
+                                    matches = search_regex('\n'.join(lines), regex, strict)
+                                    if strict:
+                                        regex = strict
+                                        
+                                    for line_number, line in matches:
+                                        if files_only:
+                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                        else:    
+                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                        
+                            if very_verbose:
+                                
+                                for line_number, line in enumerate(lines, start=1):
+                                    if keywords:
+                                        for keyword in keywords:
+                                            if keyword.lower() in line.lower():
+                                                if files_only:
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                                else:    
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                               
+                                                if very_verbose:
+                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
+                                                  
+                                if regex or strict:
+                                    matches = search_regex('\n'.join(lines), regex, strict)
                                     if strict:
                                         regex = strict
                                         
