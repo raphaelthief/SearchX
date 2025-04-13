@@ -1,10 +1,7 @@
 # Of course, you're not going to use this tool to sift through ransomware leaks or any other crap. Don't be stupid and respect the law !
-import os, re, argparse, json, requests, urllib3, sys, time, whois, pdfplumber 
+import os, re, argparse, json, requests, urllib3, sys, time, whois, pdfplumber, subprocess, logging, fitz
 from pathlib import Path
-
-# Check dependencies
-import subprocess
-import logging
+from tqdm import tqdm
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 # dependencies
@@ -73,6 +70,39 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
+all_files = []
+
+def collect_files(directory, ignored_extensions=None):
+    global all_files
+    for root, _, files in os.walk(directory):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions):
+                all_files.append(full_path)
+    return all_files
+
+
+def count_lines_in_file(file_path):
+    
+    total_lines = 0
+    try:
+        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            for _ in f:
+                total_lines += 1
+    except Exception as e:
+        tqdm.write(f"{Fore.RED}Error reading file : {Fore.YELLOW}{file_path}")
+        exit()
+        
+    return total_lines
+
+
+def initialize_progress_bar(total):
+    return tqdm(total=total, desc=f"{Fore.YELLOW}Scan progress ", unit="datas")
+
+
+def update_progress(pbar):
+    pbar.update(1)
+
 
 
 class TeeOutput:
@@ -132,7 +162,7 @@ def search_regex(text, regex, strict=None):
     if strict is not None:
         regex = rf'(?:^|[\s,:])({re.escape(strict)})\b'
         #regex = rf'\b{strict}\b'
-
+    
     for line_number, line in enumerate(text.split('\n'), start=1):  
         if re.search(regex, line):
             matches.append((line_number, line.strip()))
@@ -140,7 +170,7 @@ def search_regex(text, regex, strict=None):
     
     
 dirfileonly = [""]
-def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, strict=None, folders_only=False, files_only=False, verbose=False, ignored_extensions=None, very_verbose=False, folders_verbose=None):
+def print_tree(directory, pbar=None, depth=0, keywords=None, regex=None, color=Fore.BLUE, strict=None, folders_only=False, files_only=False, verbose=False, ignored_extensions=None, very_verbose=False, folders_verbose=None):
     global dirfileonly
     
     if "file!" in directory:
@@ -151,160 +181,204 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
             is_pdf = full_path.lower().endswith('.pdf')
 
             if is_pdf:
-                with pdfplumber.open(full_path) as pdf:
-                    for page in pdf.pages:
-                        text = page.extract_text()
-                        if text:
-                            lines.extend(text.split('\n'))
-                            
-                                        
-                if not very_verbose and not verbose:
-                    if keywords:
-                        
-                        if files_only:
-                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
-                        else:    
-                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                        
-                    if regex or strict:
-                        matches = search_regex('\n'.join(lines), regex, strict)
-                        if strict:
-                            regex = strict
+                try:
+                    doc = fitz.open(full_path)
+                    with initialize_progress_bar(len(doc)) as pbar:
+                        for i in range(len(doc)):
+                            update_progress(pbar)
+                            page = doc[i]
+                            text = page.get_text()
+                            if text:
+                                lines.extend(text.split('\n'))
 
-                        for line in matches:
-                            if files_only:
-                                print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
-                            else:    
-                                print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                    
-                if verbose and not very_verbose:
-                    for line_number, line in enumerate(lines, start=1):    
-                        if keywords:
-                            for keyword in keywords:
-                                if keyword.lower() in line.lower():
+                        if not very_verbose and not verbose:
+                            found_keywords = set()
+                            if keywords:
+                                for line in lines:
+                                    line_lower = line.lower()
+                                    update_progress(pbar)
+                                    for keyword in keywords:
+                                        if keyword.lower() in line_lower:
+                                            found_keywords.add(keyword)
+
+                                if found_keywords:
+                                    display_keywords = ", ".join(found_keywords)
                                     if files_only:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                        tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{display_keywords} {Fore.GREEN}into {Fore.YELLOW}{full_path}")
                                     else:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                                    
-                    if regex or strict:
-                        matches = search_regex('\n'.join(lines), regex, strict)
-                        if strict:
-                            regex = strict
-                            
-                        for line_number, line in matches:
-                            if files_only:
-                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                            else:    
-                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                            
-                if very_verbose:
-                    for line_number, line in enumerate(lines, start=1):    
-                        if keywords:
-                            for keyword in keywords:
-                                if keyword.lower() in line.lower():
+                                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{display_keywords} {Fore.GREEN}into {Fore.YELLOW}{os.path.basename(full_path)}")
+
+                            if regex or strict:
+                                matches = search_regex('\n'.join(lines), regex, strict)
+                                if strict:
+                                    regex = strict
+
+                                for line in matches:
+                                    update_progress(pbar)
                                     if files_only:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                        tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
                                     else:    
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                        tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+
+                        if verbose and not very_verbose:
+                            for line_number, line in enumerate(lines, start=1):
+                                line_lower = line.lower()
+                                update_progress(pbar)
+                                if keywords:
+                                    for keyword in keywords:
+                                        if keyword.lower() in line_lower:
+                                            if files_only:
+                                                tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                            else:
+                                                tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+
+                            if regex or strict:
+                                matches = search_regex('\n'.join(lines), regex, strict)
+                                if strict:
+                                    regex = strict
+                                    
+                                for line_number, line in matches:
+                                    update_progress(pbar)
+                                    if files_only:
+                                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                    else:    
+                                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+
+                        if very_verbose:
+                            for line_number, line in enumerate(lines, start=1): 
+                                line_lower = line.lower()
+                                update_progress(pbar)
+                                if keywords:
+                                    for keyword in keywords:
+                                        if keyword.lower() in line_lower:
+                                            if files_only:
+                                                tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                            else:    
+                                                tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                           
+                                            if very_verbose:
+                                                tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line}")                             
+                                    
+                            if regex or strict:
+                                matches = search_regex('\n'.join(lines), regex, strict)
+                                if strict:
+                                    regex = strict
+                                    
+                                for line_number, line in matches:
+                                    update_progress(pbar)
+                                    if files_only:
+                                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                    else:    
+                                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                    
-                                    if very_verbose:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
-                                      
-                    if regex or strict:
-                        matches = search_regex('\n'.join(lines), regex, strict)
-                        if strict:
-                            regex = strict
-                            
-                        for line_number, line in matches:
-                            if files_only:
-                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                            else:    
-                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                           
-                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
-                                              
-                            
-                            
+                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line}")
+
+
+                except pdfplumber.utils.exceptions.PdfminerException as e:
+                    tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.RED}Error reading PDF file (pdfplumber) : {Fore.YELLOW}{full_path}")
+                    exit()
+
+                except Exception as e:
+                    tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.RED}Error reading PDF file : {Fore.YELLOW}{full_path}")
+                    exit()
+                
             else:
                 with open(full_path, 'r', encoding='utf-8', errors='ignore') as file:
                     lines = file.readlines()
-
-                if not very_verbose and not verbose:
-                    if keywords:
-                        
-                        if files_only:
-                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
-                        else:    
-                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                        
-                    if regex or strict:
-                        matches = search_regex('\n'.join(lines), regex, strict)
-                        if strict:
-                            regex = strict
-
-                        for line in matches:
-                            if files_only:
-                                print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
-                            else:    
-                                print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                    
-                if verbose and not very_verbose:
-                    for line_number, line in enumerate(lines, start=1):    
+                 
+                count_lines_file = count_lines_in_file(full_path)
+                with initialize_progress_bar(count_lines_file) as pbar:
+                    if not very_verbose and not verbose:
+                        found_keywords = set()
                         if keywords:
-                            for keyword in keywords:
-                                if keyword.lower() in line.lower():
-                                    if files_only:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                                    else:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                                    
-                    if regex or strict:
-                        matches = search_regex('\n'.join(lines), regex, strict)
-                        if strict:
-                            regex = strict
-                            
-                        for line_number, line in matches:
-                            if files_only:
-                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                            else:    
-                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                            
-                if very_verbose:
-                    for line_number, line in enumerate(lines, start=1):    
-                        if keywords:
-                            for keyword in keywords:
-                                if keyword.lower() in line.lower():
-                                    if files_only:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                                    else:    
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
-                                   
-                                    if very_verbose:
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
-                                      
-                    if regex or strict:
-                        matches = search_regex('\n'.join(lines), regex, strict)
-                        if strict:
-                            regex = strict
-                            
-                        for line_number, line in matches:
-                            if files_only:
-                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
-                            else:    
-                                print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
-                           
-                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
-                                    
+                            for line in lines:
+                                line_lower = line.lower()
+                                update_progress(pbar)
+                                for keyword in keywords:
+                                    if keyword.lower() in line_lower:
+                                        found_keywords.add(keyword)
+
+                            if found_keywords:
+                                display_keywords = ", ".join(found_keywords)
+                                if files_only:
+                                    tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{display_keywords} {Fore.GREEN}into {Fore.YELLOW}{full_path}")
+                                else:
+                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{display_keywords} {Fore.GREEN}into {Fore.YELLOW}{os.path.basename(full_path)}")
+
+                        if regex or strict:
+                            matches = search_regex('\n'.join(lines), regex, strict)
+                            if strict:
+                                regex = strict
+
+                            for line in matches:
+                                update_progress(pbar)
+                                if files_only:
+                                    tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                                else:    
+                                    tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+
+                    if verbose and not very_verbose:
+                        for line_number, line in enumerate(lines, start=1):
+                            line_lower = line.lower()
+                            update_progress(pbar)
+                            if keywords:
+                                for keyword in keywords:
+                                    if keyword.lower() in line_lower:
+                                        if files_only:
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                        else:
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+
+                        if regex or strict:
+                            matches = search_regex('\n'.join(lines), regex, strict)
+                            if strict:
+                                regex = strict
+                                
+                            for line_number, line in matches:
+                                update_progress(pbar)
+                                if files_only:
+                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                else:    
+                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+
+                    if very_verbose:
+                        for line_number, line in enumerate(lines, start=1):
+                            line_lower = line.lower()
+                            update_progress(pbar)
+                            if keywords:
+                                for keyword in keywords:
+                                    if keyword.lower() in line_lower:
+                                        if files_only:
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                        else:    
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                       
+                                        if very_verbose:
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line}")                             
+                                
+                        if regex or strict:
+                            matches = search_regex('\n'.join(lines), regex, strict)
+                            if strict:
+                                regex = strict
+                                
+                            for line_number, line in matches:
+                                update_progress(pbar)
+                                if files_only:
+                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                else:    
+                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                               
+                                tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line}")
+           
         else:
-            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
+            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
 
     else:
         
         try:
             items = os.listdir(directory)
         except PermissionError:
-            print(f"{color}{Fore.RED}Permission denied : {directory}")
+            tqdm.write(f"{color}{Fore.RED}Permission denied : {directory}")
             return
         
         for i, item in enumerate(sorted(items)):
@@ -315,13 +389,13 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                 
                     if not folders_verbose:
                 
-                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{item}")
+                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{item}")
                         
                     else:
-                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{full_path}")
+                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.YELLOW}{full_path}")
                         
                 if (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)): #if not files_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
-                    print_tree(full_path, depth + 1, keywords, regex, color, strict, folders_only, files_only, verbose, ignored_extensions, very_verbose, folders_verbose)
+                    print_tree(full_path, pbar, depth + 1, keywords, regex, color, strict, folders_only, files_only, verbose, ignored_extensions, very_verbose, folders_verbose)
             else:
                 if not folders_only and (ignored_extensions is None or not any(full_path.endswith(ext) for ext in ignored_extensions)):
                     
@@ -331,20 +405,35 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                         is_pdf = full_path.lower().endswith('.pdf')
 
                         if is_pdf:
-                            with pdfplumber.open(full_path) as pdf:
-                                for page in pdf.pages:
-                                    text = page.extract_text()
-                                    if text:
-                                        lines.extend(text.split('\n'))
+                            try:
+                                with pdfplumber.open(full_path) as pdf:
+                                    for page in pdf.pages:
+                                        text = page.extract_text()
+                                        if text:
+                                            lines.extend(text.split('\n'))
+                            except pdfplumber.utils.exceptions.PdfminerException as e:
+                                tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.RED}Error reading PDF file (pdfplumber) : {Fore.YELLOW}{full_path}")
+                            except Exception as e:
+                                tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.RED}Error reading PDF file : {Fore.YELLOW}{full_path}")
+                    
 
                             if not very_verbose and not verbose:
+                                found_keywords = set()
                                 if keywords:
-                                    
-                                    if files_only:
-                                        print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
-                                    else:    
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                                    
+                                    for line in lines:
+                                        line_lower = line.lower()
+                                        for keyword in keywords:
+                                            if keyword.lower() in line_lower:
+                                                found_keywords.add(keyword)
+
+                                    if found_keywords:
+                                        display_keywords = ", ".join(found_keywords)
+                                        if files_only:
+                                            tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{display_keywords} {Fore.GREEN}into {Fore.YELLOW}{full_path}")
+                                        else:
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{display_keywords} {Fore.GREEN}into {Fore.YELLOW}{os.path.basename(full_path)}")
+                                            
+
                                 if regex or strict:
                                     matches = search_regex('\n'.join(lines), regex, strict)
                                     if strict:
@@ -352,19 +441,20 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
 
                                     for line in matches:
                                         if files_only:
-                                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
                                         else:    
-                                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
                                 
                             if verbose and not very_verbose:
                                 for line_number, line in enumerate(lines, start=1):
+                                    line_lower = line.lower()
                                     if keywords:
                                         for keyword in keywords:
-                                            if keyword.lower() in line.lower():
+                                            if keyword.lower() in line_lower:
                                                 if files_only:
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
                                                 else:
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                                 
                                 if regex or strict:
                                     matches = search_regex('\n'.join(lines), regex, strict)
@@ -373,23 +463,26 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                         
                                     for line_number, line in matches:
                                         if files_only:
-                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
                                         else:    
-                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                         
                             if very_verbose:
                                 for line_number, line in enumerate(lines, start=1):
+                                    line_lower = line.lower()
                                     if keywords:
                                         for keyword in keywords:
-                                            if keyword.lower() in line.lower():
+                                            if keyword.lower() in line_lower:
                                                 if files_only:
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
                                                 else:    
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
                                                
                                                 if very_verbose:
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
-                                                  
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line}")                             
+                                    
+                                    update_progress(pbar)
+                                        
                                 if regex or strict:
                                     matches = search_regex('\n'.join(lines), regex, strict)
                                     if strict:
@@ -397,11 +490,11 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                         
                                     for line_number, line in matches:
                                         if files_only:
-                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
                                         else:    
-                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                        
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
+                                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line}")
                                                 
 
                         else:
@@ -409,33 +502,41 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                 lines = file.readlines()
                         
                             if not very_verbose and not verbose:
+                                found_keywords = set()
                                 if keywords:
-                                    
-                                    if files_only:
-                                        print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
-                                    else:    
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                                    
+                                    for line in lines:
+                                        line_lower = line.lower()
+                                        for keyword in keywords:
+                                            if keyword.lower() in line_lower:
+                                                found_keywords.add(keyword)
+
+                                    if found_keywords:
+                                        display_keywords = ", ".join(found_keywords)
+                                        if files_only:
+                                            tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{display_keywords} {Fore.GREEN}into {Fore.YELLOW}{full_path}")
+                                        else:
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{display_keywords} {Fore.GREEN}into {Fore.YELLOW}{os.path.basename(full_path)}")
+                                            
                                 if regex or strict:
                                     matches = search_regex('\n'.join(lines), regex, strict)
                                     if strict:
                                         regex = strict
-
-                                    for line in matches:
+                                    if matches:
                                         if files_only:
-                                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{regex}{Fore.GREEN} into {Fore.YELLOW}{full_path}")
                                         else:    
-                                            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
-                                
+                                            tqdm.write(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{regex}{Fore.GREEN} into {Fore.YELLOW}{os.path.basename(full_path)}")
+
                             if verbose and not very_verbose:
                                 for line_number, line in enumerate(lines, start=1):
+                                    line_lower = line.lower()
                                     if keywords:
                                         for keyword in keywords:
-                                            if keyword.lower() in line.lower():
+                                            if keyword.lower() in line_lower:
                                                 if files_only:
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
                                                 else:
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                                 
                                 if regex or strict:
                                     matches = search_regex('\n'.join(lines), regex, strict)
@@ -444,24 +545,24 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                         
                                     for line_number, line in matches:
                                         if files_only:
-                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
                                         else:    
-                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                         
                             if very_verbose:
-                                
                                 for line_number, line in enumerate(lines, start=1):
+                                    line_lower = line.lower()
                                     if keywords:
                                         for keyword in keywords:
-                                            if keyword.lower() in line.lower():
+                                            if keyword.lower() in line_lower:
                                                 if files_only:
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
                                                 else:    
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword}{Fore.GREEN} at {Fore.YELLOW}line {line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")                                       
                                                
                                                 if very_verbose:
-                                                    print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
-                                                  
+                                                    tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")                             
+
                                 if regex or strict:
                                     matches = search_regex('\n'.join(lines), regex, strict)
                                     if strict:
@@ -469,15 +570,16 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
                                         
                                     for line_number, line in matches:
                                         if files_only:
-                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{full_path}")
                                         else:    
-                                            print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
+                                            tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}Found pattern matching {Fore.YELLOW}{regex}{Fore.GREEN} at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{os.path.basename(full_path)}")
                                        
-                                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
+                                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}│   {Fore.CYAN}{line.strip()}")
                                                 
                     else:
-                        print(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
+                        tqdm.write(f"{color}{Style.BRIGHT}{'│   ' * depth}├── {Fore.GREEN}{item}")
                       
+                update_progress(pbar)
 
 
 #====================================== MultiThreading ======================================
@@ -486,57 +588,73 @@ def print_tree(directory, depth=0, keywords=None, regex=None, color=Fore.BLUE, s
 def search_keyword_in_file(file, keywords=None, very_verbose=False, verbose=False):
     try:
         color=Fore.BLUE
-        with open(file, 'r', encoding='utf-8', errors='ignore') as f:
-            # Read the entire content of the file
-            content = f.read()
-            
-            # Check if any keyword is in the content
-            if any(keyword.lower() in content.lower() for keyword in keywords):
-                # Mode normal (non verbose)
-                if not very_verbose and not verbose:
-                    print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords} {Fore.GREEN}in {Fore.YELLOW}{file}")
-                
-                # Verbose and very_verbose modes
-                else:
-                    for line_number, line in enumerate(content.splitlines(), start=1):
-                        for keyword in keywords:
-                            if keyword.lower() in line.lower():
-                                if very_verbose:
-                                    print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{file}")
-                                    print(f"{color}{Style.BRIGHT}│   {Fore.CYAN}{line.strip()}")
-                                else:
-                                    print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{file}")
+        
+        is_pdf = file.lower().endswith('.pdf')
+        lines = []        
 
+        if is_pdf:
+            try:
+                with pdfplumber.open(file) as pdf:
+                    for page in pdf.pages:
+                        text = page.extract_text()
+                        if text:
+                            lines.extend(text.split('\n'))
+            except PdfminerException as e:
+                print(f"{Fore.RED}[PDF error] {file}: {e}")
+            except Exception as e:
+                print(f"{Fore.RED}[Unknown PDF error] {file}: {e}")
+
+        else:
+            with open(file, 'r', encoding='utf-8', errors='ignore') as f:
+                lines = f.read().splitlines()
+                
+                
+        found = False
+        for line_number, line in enumerate(lines, start=1):
+            for keyword in keywords:
+                if keyword.lower() in line.lower():
+                    found = True
+                    
+                    if very_verbose:
+                        print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{file}")
+                        print(f"{color}{Style.BRIGHT}│   {Fore.CYAN}{line.strip()}")
+                    elif verbose:
+                        print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keyword} {Fore.GREEN}at line {Fore.YELLOW}{line_number} {Fore.GREEN}in {Fore.YELLOW}{file}")
+                    
+        if found and not verbose and not very_verbose:
+            print(f"{color}{Style.BRIGHT}├── {Fore.GREEN}Found {Fore.YELLOW}{keywords} {Fore.GREEN}in {Fore.YELLOW}{file}")
+                    
     except Exception as e:
         pass
 
-
 # Function to walk through directories and files
 def walk_through_directories(directory, keywords=None, num_threads=10, very_verbose=False, verbose=False, ignored_extensions=None):
-    start_time = time.time()
-    files_to_process = []
-    # Walk through all subdirectories and files in the given directory
-    for root, subdirs, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            
-            # Skip files with ignored extensions
-            if ignored_extensions:
-                file_extension = os.path.splitext(file)[1].lower()
-                if file_extension in ignored_extensions:
-                    continue  # Skip this file and move to the next one
+    try:
+        start_time = time.time()
+        files_to_process = []
+        # Walk through all subdirectories and files in the given directory
+        for root, subdirs, files in os.walk(directory):
+            for file in files:
+                file_path = os.path.join(root, file)
+                
+                # Skip files with ignored extensions
+                if ignored_extensions:
+                    file_extension = os.path.splitext(file)[1].lower()
+                    if file_extension in ignored_extensions:
+                        continue  # Skip this file and move to the next one
 
-            files_to_process.append(file_path)
-    
-    # Create a thread pool with the specified number of threads
-    with ThreadPoolExecutor(max_workers=num_threads) as executor:
-        # Launch the search in each file
-        executor.map(lambda file: search_keyword_in_file(file, keywords, very_verbose=very_verbose, verbose=verbose), files_to_process)
-    
-    elapsed_time = time.time() - start_time
-    formatted_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
-    print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{formatted_time} ({elapsed_time:.2f} seconds)")
-
+                files_to_process.append(file_path)
+        
+        # Create a thread pool with the specified number of threads
+        with ThreadPoolExecutor(max_workers=num_threads) as executor:
+            # Launch the search in each file
+            executor.map(lambda file: search_keyword_in_file(file, keywords, very_verbose=very_verbose, verbose=verbose), files_to_process)
+        
+        elapsed_time = time.time() - start_time
+        formatted_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+        print(f"{Fore.YELLOW}[!] Elapsed time : {Fore.GREEN}{formatted_time} ({elapsed_time:.2f} seconds)")
+    except Exception as e:
+        pass
 
 
 #====================================== Main ======================================
@@ -579,7 +697,7 @@ def main():
         parser.add_argument("-o", "--output", help="Save the results to a specified text file")
         parser.add_argument('-e', '--exclude', metavar='', type=str, help='Extensions to ignore separated by commas', default='')
         parser.add_argument('-i', '--ignore', action="store_true", help='ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin')
-        parser.add_argument("-t", "--threads", type=int, help="Multi threading (Default 25). Works automatically with the -f argument. You need to provide -k argument(s). Optionals args allowed : -v -vv -i -e | Fast mode works only with -v -vv -k -i -e")
+        parser.add_argument("-t", "--threads", type=int, help="Multi threading. Works automatically with the -f argument. You need to provide -k argument(s). Optionals args allowed : -v -vv -i -e | Fast mode works only with -v -vv -k -i -e")
 
         
         args = parser.parse_args()
@@ -919,7 +1037,9 @@ def main():
                 walk_through_directories(args.root, keywords=keywords, num_threads=args.threads, very_verbose=very_verbose, verbose=args.verbose, ignored_extensions=ignored_extensions)
             else:
                 start_time = time.time()
-                print_tree(args.root, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+                all_files = collect_files(args.root, ignored_extensions)
+                with initialize_progress_bar(len(all_files)) as pbar:
+                    print_tree(args.root, pbar, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
 
                 print("")
                 elapsed_time = time.time() - start_time
@@ -944,6 +1064,8 @@ def main():
             print("")        
             print(Fore.YELLOW + args.rootfile) # File search -r
             start_time = time.time()
+            #total_lines = count_lines_in_file(args.rootfile)
+            #with initialize_progress_bar(total_lines) as pbar:
             print_tree("file!" + args.rootfile, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
             print("")
             elapsed_time = time.time() - start_time
