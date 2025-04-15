@@ -27,7 +27,7 @@ def check_rate_limit(uname, headers):
     response = requests.get(url, headers=headers)
     rate_limit = response.json()
     remaining_requests = rate_limit['rate']['remaining']
-    print(f"\n{Fore.YELLOW}[!] Remaining requests : {Fore.RED}{remaining_requests} {Fore.YELLOW}of {Fore.GREEN}{rate_limit['rate']['limit']}")
+    print(f"\n{Fore.YELLOW}[!] Remaining requests : {Fore.RED}{remaining_requests}{Fore.GREEN}/{rate_limit['rate']['limit']}")
     
     if remaining_requests == 0:
         pass
@@ -49,14 +49,14 @@ def general(uname, headers):
         
         print(f"\n{Fore.YELLOW}[!] Github infos")
         print(f"[?] source : {url}")
-        print(f"{Fore.GREEN}[+] {Fore.YELLOW}Name       : {Fore.GREEN}{user_data['name']}")
-        print(f"{Fore.GREEN}[+] {Fore.YELLOW}Company    : {Fore.GREEN}{user_data['company']}")
-        print(f"{Fore.GREEN}[+] {Fore.YELLOW}Location   : {Fore.GREEN}{user_data['location']}")
-        print(f"{Fore.GREEN}[+] {Fore.YELLOW}Email      : {Fore.GREEN}{user_data['email']}")
-        print(f"{Fore.GREEN}[+] {Fore.YELLOW}Twitter    : {Fore.GREEN}{user_data['twitter_username']}")
-        print(f"{Fore.GREEN}[+] {Fore.YELLOW}Bio        : {Fore.GREEN}{user_data['bio']}")
-        print(f"{Fore.GREEN}[+] {Fore.YELLOW}Repos      : {Fore.GREEN}{user_data['public_repos']}")
-        print(f"{Fore.GREEN}[+] {Fore.YELLOW}Avatar     : {Fore.GREEN}{user_data['avatar_url']}")
+        print(f"{Fore.GREEN}[+] Name       : {Fore.YELLOW}{user_data['name']}")
+        print(f"{Fore.GREEN}[+] Company    : {Fore.YELLOW}{user_data['company']}")
+        print(f"{Fore.GREEN}[+] Location   : {Fore.YELLOW}{user_data['location']}")
+        print(f"{Fore.GREEN}[+] Email      : {Fore.YELLOW}{user_data['email']}")
+        print(f"{Fore.GREEN}[+] Twitter    : {Fore.YELLOW}{user_data['twitter_username']}")
+        print(f"{Fore.GREEN}[+] Bio        : {Fore.YELLOW}{user_data['bio']}")
+        print(f"{Fore.GREEN}[+] Repos      : {Fore.YELLOW}{user_data['public_repos']}")
+        print(f"{Fore.GREEN}[+] Avatar     : {Fore.YELLOW}{user_data['avatar_url']}")
     else:
         pass
 
@@ -79,13 +79,20 @@ def get_commits(username, repo_name, headers):
         return []
 
 
-def extract_emails_from_commits(commits):
+def extract_emails_from_commits(commits, repo_name):
     emails = []
     for commit in commits:
         try:
             email = commit['commit']['author']['email']
-            if email not in emails:  
-                emails.append(email)
+            
+            # Vérification si 'author' existe et est un objet valide
+            if commit.get('author') is not None:
+                username = commit['author'].get('login', 'Unknown')  # Utilisation de .get() pour éviter les erreurs
+            else:
+                username = 'Unknown'
+            
+            if email not in [e['email'] for e in emails]:  # Vérification pour éviter les doublons
+                emails.append({'email': email, 'username': username, 'repo': repo_name})
         except KeyError:
             continue
     return emails
@@ -93,18 +100,28 @@ def extract_emails_from_commits(commits):
 
 def repos(uname, headers):
     repos = get_repositories(uname, headers)
-    all_emails = set()
+    user_emails = {}  # Dictionnaire pour regrouper les résultats par username
     print("")
     
     for repo in repos:
         repo_name = repo['name']
         print(f"{Fore.GREEN}[+] {Fore.YELLOW}Extracting repo : {Fore.GREEN}{repo_name}")
         commits = get_commits(uname, repo_name, headers)
-        emails = extract_emails_from_commits(commits)
-        all_emails.update(emails)
+        emails = extract_emails_from_commits(commits, repo_name)
         
-    print(f"\n{Fore.YELLOW}[!] Emails found")
+        # Regroupement des e-mails par username
+        for email_info in emails:
+            email = email_info['email']
+            username = email_info['username']
+            if username not in user_emails:
+                user_emails[username] = []  # Créer une liste si l'utilisateur n'existe pas
+            user_emails[username].append(f"{Fore.CYAN}{email} {Fore.GREEN}(Repo : {email_info['repo']})")
+    
+    print(f"\n{Fore.YELLOW}[!] Emails found grouped by username")
     print(f"[?] source : https://api.github.com/repos/{uname}/<REPO NAME>/commits")
     
-    for email in all_emails:
-        print(f"{Fore.GREEN}[+] " + email)
+    # Affichage des résultats par username
+    for username, emails in user_emails.items():
+        print(f"\n{Fore.GREEN}[+] User : {Fore.YELLOW}{username}")
+        for email in emails:
+            print(f"{Fore.GREEN}[+] {email}")
