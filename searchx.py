@@ -15,7 +15,7 @@ from Dependencies.leakcheck import leackcheck
 from Dependencies.proxynova import proxynova1
 from Dependencies.skype import skype
 from Dependencies.breachdirectory import passwordtest
-from Dependencies.blackbird import blackbirdZ
+from Dependencies.blackbird import blackbirdhunt
 from Dependencies.github import githubusername
 from Dependencies.name_lastname import namesID
 from Dependencies.iknowwhatyoudownload import torrents
@@ -822,6 +822,9 @@ def main():
                 print(f"[!] Checking dependencies ...")
                 check_holehe(args.email)
                 
+                print(f"\n{Fore.YELLOW}----- Launching Blackbird : {Fore.GREEN}https://github.com/p1ngul1n0/blackbird{Fore.YELLOW} -----")
+                blackbirdhunt(args.email, "email")
+                
                 leackcheck(args.email)
                 scam(args.email)
 
@@ -830,7 +833,6 @@ def main():
 
                 print(f"\n{Fore.YELLOW}----- Launching Ghunt : {Fore.GREEN}https://github.com/mxrch/GHunt{Fore.YELLOW} -----")
                 ghunter(args.email)
-                
                 
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://epieos.com/")
@@ -853,7 +855,7 @@ def main():
             try:
                 print(f"{Fore.YELLOW}----- Launching blackbird : {Fore.GREEN}https://github.com/p1ngul1n0/blackbird{Fore.YELLOW} -----")
                 print(f"[!] Checking dependencies ...")
-                blackbirdZ(args.username)
+                blackbirdhunt(args.username, "username")
                 githubusername(args.username)
 
                 print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
