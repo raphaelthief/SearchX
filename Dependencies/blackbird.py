@@ -1,133 +1,72 @@
-# Most of the code comes from https://github.com/p1ngul1n0/blackbird
+# Credits to https://github.com/p1ngul1n0/blackbird
 
-import os, subprocess, asyncio, aiohttp, json, sys, warnings, random
-from colorama import init, Fore, Style
-from bs4 import BeautifulSoup
-init() # Init colorama
+import subprocess
+import os
+import sys
+from colorama import init, Fore
 
+# Init colorama
+init()
 
-base_dir = os.path.dirname(os.path.abspath(__file__))  # bug correct for wsl etc..
-
-file_path0 = os.path.join(base_dir, 'remake_blackbird', 'data.json') # bug correct for wsl etc..
-file = open(file_path0)#('Dependencies\\remake_blackbird\\data.json')
-searchData = json.load(file)
-
-file_path1 = os.path.join(base_dir, 'remake_blackbird', 'data1.json') # bug correct for wsl etc..
-file1 = open(file_path1)#('Dependencies\\remake_blackbird\\data1.json')
-searchData1 = json.load(file1)
-
-file_path2 = os.path.join(base_dir, 'remake_blackbird', 'data2.json') # bug correct for wsl etc..
-file2 = open(file_path2)#('Dependencies\\remake_blackbird\\data2.json')
-searchData2 = json.load(file2)
+# Variables
+BLACKBIRD_REPO = "https://github.com/p1ngul1n0/blackbird.git"
+BLACKBIRD_LOCAL_DIR = "Dependencies/blackbird"  
 
 
-currentOs = sys.platform
-path = os.path.dirname(__file__)
-warnings.filterwarnings('ignore')
+
+def update_repo(repo_url, local_dir, target, what):
+    if os.path.exists(local_dir):
+        if what == "email":
+            emailhunt(target)
+        elif what == "username":
+            unamehunt(target)
+            
+    else:
+        answer = input(f"{Fore.YELLOW}[?] Blackbird is not installed. Do you want to install it? (y/n): {Fore.GREEN}").strip().lower()
+
+        if answer == "y":
+            print(f"{Fore.YELLOW}[!] Cloning repo {repo_url} to {local_dir}...{Fore.GREEN}")
+            with open(os.devnull, 'wb') as hide_output:  
+                subprocess.run(["git", "clone", repo_url, local_dir], stdout=hide_output, stderr=hide_output)
+
+            print(f"{Fore.YELLOW}[!] Installing dependencies from requirements.txt...{Fore.GREEN}")
+            requirements_path = os.path.join(local_dir, "requirements.txt")
+
+            with open(os.devnull, 'wb') as hide_output:  
+                subprocess.run(["pip", "install", "-r", requirements_path], stdout=hide_output, stderr=hide_output)
+
+            print(f"{Fore.GREEN}[+] {Fore.YELLOW}Blackbird and dependencies installed successfully !{Fore.GREEN}")
+            print(f"{Fore.YELLOW}[!] Launching Blackbird in a new window...{Fore.GREEN}")
+            
+            if what == "email":
+                emailhunt(target)
+            elif what == "username":
+                unamehunt(target)
+                
+        else:
+            print(f"{Fore.RED}[!] Blackbird installation skipped.{Fore.GREEN}")
+
+def emailhunt(email):
+    blackbird_script_path = os.path.join(BLACKBIRD_LOCAL_DIR, "blackbird.py")  
+    if os.name == 'nt':  
+        command = f'start cmd /k "cd {BLACKBIRD_LOCAL_DIR} && python blackbird.py --email {email}"'
+
+    else:  
+        command = f'gnome-terminal -- bash -c "cd {BLACKBIRD_LOCAL_DIR} && python3 blackbird.py --email {email}; exec bash"'
+
+    os.system(command)
+
+def unamehunt(username):
+    blackbird_script_path = os.path.join(BLACKBIRD_LOCAL_DIR, "blackbird.py")  
+    if os.name == 'nt':  
+        command = f'start cmd /k "cd {BLACKBIRD_LOCAL_DIR} && python blackbird.py --username {username}"'
+
+    else:  
+        command = f'gnome-terminal -- bash -c "cd {BLACKBIRD_LOCAL_DIR} && python3 blackbird.py --username {username}; exec bash"'
 
 
-file_path3 = os.path.join(base_dir, 'remake_blackbird', 'useragents.txt') # bug correct for wsl etc..
-useragents = open(file_path3).read().splitlines()#('Dependencies\\remake_blackbird\\useragents.txt').read().splitlines()
-proxy = None
-
-async def findUsername(username, interfaceType, flag_csv=False):
-    
-    timeout = aiohttp.ClientTimeout(total=100)
-
-    async with aiohttp.ClientSession(timeout=timeout) as session:
-        semaphore = asyncio.Semaphore(1)  # Limit the number of concurrent requests to 10
-        tasks = []
-        for u in searchData["sites"]:
-            task = asyncio.ensure_future(makeRequest(session, u, username, interfaceType, semaphore))
-            tasks.append(task)
-
-        results = await asyncio.gather(*tasks)
- 
-    timeout = aiohttp.ClientTimeout(total=100)
-
-    async with aiohttp.ClientSession(timeout=timeout) as session:
-        semaphore = asyncio.Semaphore(1)  # Limit the number of concurrent requests to 10
-        tasks = []
-        for u in searchData1["sites"]:
-            task = asyncio.ensure_future(makeRequest(session, u, username, interfaceType, semaphore))
-            tasks.append(task)
-
-        results = await asyncio.gather(*tasks)
- 
-    timeout = aiohttp.ClientTimeout(total=100)
-
-    async with aiohttp.ClientSession(timeout=timeout) as session:
-        semaphore = asyncio.Semaphore(1)  # Limit the number of concurrent requests to 10
-        tasks = []
-        for u in searchData2["sites"]:
-            task = asyncio.ensure_future(makeRequest(session, u, username, interfaceType, semaphore))
-            tasks.append(task)
-
-        results = await asyncio.gather(*tasks)
-    
-    print("")
-
-async def makeRequest(session, u, username, interfaceType, semaphore):
-    
-    try:
-        url = u["url"].format(username=username)
-        jsonBody = None
-        useragent = random.choice(useragents)
-        headers = {
-            "User-Agent": useragent
-        }
-        metadata = []
-        if 'headers' in u:
-            headers.update(eval(u['headers']))
-        if 'json' in u:
-            jsonBody = u['json'].format(username=username)
-            jsonBody = json.loads(jsonBody)
-        try:
-            async with session.request(u["method"], url, json=jsonBody,proxy=proxy, headers=headers, ssl=False, timeout=20) as response:
-                responseContent = await response.text()
-                if 'content-type' in response.headers and "application/json" in response.headers["Content-Type"]:
-                    jsonData = await response.json()
-                else:
-                    soup = BeautifulSoup(responseContent, 'html.parser')
-
-                if eval(u["valid"]):
-                    print(f'{Fore.LIGHTGREEN_EX}    [+]\033[0m - #{u["id"]} {Fore.BLUE}{u["app"]}\033[0m {Fore.LIGHTGREEN_EX}account found\033[0m - {Fore.YELLOW}{url}\033[0m [{response.status} {response.reason}]\033[0m')
-                   
-                    if 'metadata' in u:
-                        metadata = []
-                        for d in u["metadata"]:
-                            try:
-                                value = eval(d['value']).strip('\t\r\n')
-                                print(f"       |--{d['key']}: {value}")
-                   
-                                metadata.append({"type": d["type"], "key": d['key'], "value": value})
-                            except Exception as e:
-                                pass
-                    return ({"id": u["id"], "app": u['app'], "url": url, "response-status": f"{response.status} {response.reason}", "status": "FOUND", "error-message": None, "metadata": metadata})
-                else:
-                    if interfaceType == 'CLI':
-                       
-                       return ({"id": u["id"], "app": u['app'], "url": url, "response-status": f"{response.status} {response.reason}", "status": "NOT FOUND", "error-message": None, "metadata": metadata})
-        except Exception as e:
-            #print(e)
-            try:
-                if interfaceType == 'CLI':
-                    
-                    return ({"id": u["id"], "app": u['app'], "url": url, "response-status": None, "status": "ERROR", "error-message": repr(e), "metadata": metadata})
-            except Exception as e:
-                #print(e)
-                pass
-    except Exception as e:
-        #print(e)
-        pass
+    os.system(command)
 
 
-def blackbirdZ(uname):
-    print(f"{Fore.YELLOW}[!] Searching for : {Fore.GREEN}{uname}{Fore.YELLOW}\n")
-
-    #try:
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-    #except:
-        #pass
-    interfaceType = 'CLI'
-    asyncio.run(findUsername(uname, interfaceType, None))
+def blackbirdhunt(target, what):
+    update_repo(BLACKBIRD_REPO, BLACKBIRD_LOCAL_DIR, target, what)
