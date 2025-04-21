@@ -1097,6 +1097,34 @@ def lesrebeux(email):
         print(f"{R}[x] lesrebeus.com")
 
 
+def linktree(email):
+    session = requests.Session()
+    session.get("https://auth.linktr.ee")
+    verify_url = "https://linktr.ee/validate/login/email"
+
+    payload = {"email": email}
+    headers = {
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://auth.linktr.ee",
+        "Referer": "https://auth.linktr.ee/",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+    }
+    response = session.post(verify_url, json=payload, headers=headers)
+    try:
+        data = response.json()
+        if "isEmailAvailable" in data:
+            if data["isEmailAvailable"]:
+                print(f"{M}[-] linktr.ee")
+            else:
+                print(f"{G}[+] linktr.ee")
+        else:
+            print(f"{R}[x] linktr.ee")
+    except Exception as e:
+        print(f"{R}[x] linktr.ee")
+
+
+
 ############################## PHONE ##############################
 
 def apple(phone):
@@ -1715,6 +1743,77 @@ def lesrebeux1(username):
         print(f"{R}[x] lesrebeus.com")
 
 
+def darkforums(username):
+    headers = {
+        "accept": "application/json, text/javascript, */*; q=0.01",
+        "accept-encoding": "identity",
+        "accept-language": "fr-FR,fr;q=0.9",
+        "priority": "u=1, i",
+        "referer": "https://darkforums.st/member.php",
+        "sec-ch-ua": '"Brave";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "sec-gpc": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "x-requested-with": "XMLHttpRequest"
+    }
+
+    response = requests.get(
+        f"https://darkforums.st/xmlhttp.php?action=get_users&query={username}", headers=headers
+    )
+
+    try:
+        users = response.json()
+        if users:
+            print(f"{G}[+] darkforums.st")
+            for user in users:
+                print(f"{C} ├─ {G}UID : {user['uid']}, Username : {user['id']}")
+        else:
+            print(f"{M}[-] darkforums.st")
+    except requests.exceptions.JSONDecodeError:
+        print(f"{R}[x] darkforums.st")
+
+
+def cracked(username):
+    headers = {
+        "accept": "application/json, text/javascript, */*; q=0.01",
+        "accept-encoding": "identity",
+        "accept-language": "fr-FR,fr;q=0.9",
+        "priority": "u=1, i",
+        "referer": "https://cracked.sh/member.php",
+        "sec-ch-ua": '"Brave";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+        "sec-ch-ua-mobile": "?0",
+        "sec-ch-ua-platform": '"Windows"',
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "sec-gpc": "1",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "x-requested-with": "XMLHttpRequest"
+    }
+
+    response = requests.get(
+        f"https://cracked.sh/xmlhttp.php?action=get_users&query={username}", headers=headers
+    )
+
+    try:
+        users = response.json()
+        if users:
+            print(f"{G}[+] cracked.sh")
+            for user in users:
+                print(f"{C} ├─ {G}UID : {user['uid']}, Username : {user['id']}")
+        else:
+            print(f"{M}[-] cracked.sh")
+    except requests.exceptions.JSONDecodeError:
+        print(f"{R}[x] cracked.sh")
+
+
+
+
+
 def init_search(target, what):
     if what == "email":
         paypal(target)
@@ -1766,3 +1865,5 @@ def init_search(target, what):
         sexylib(target)
         gaym1(target)
         lesrebeux1(target)
+        darkforums(target)
+        cracked(target)
