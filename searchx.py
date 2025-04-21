@@ -38,6 +38,7 @@ from Dependencies.drive import drivehunt
 from Dependencies.scamtel import getscamtel
 from Dependencies.crawl_emails_phone import get_emails_phones
 from Dependencies.lydia import proceed
+from Dependencies.emailer import init_search
 
 # colorama
 from colorama import init, Fore, Style
@@ -833,6 +834,10 @@ def main():
 
                 print(f"\n{Fore.YELLOW}----- Launching Ghunt : {Fore.GREEN}https://github.com/mxrch/GHunt{Fore.YELLOW} -----")
                 ghunter(args.email)
+
+                print(f"\n{Fore.YELLOW}----- Launching searchX research -----")
+                init_search(args.email, "email")
+                
                 
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://epieos.com/")
@@ -860,6 +865,10 @@ def main():
 
                 print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
                 gitfive_(args.username, "username")
+
+                print(f"\n{Fore.YELLOW}----- Launching searchX research -----")
+                init_search(args.username, "username")
+
 
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
@@ -905,6 +914,11 @@ def main():
                     proceed(args.phone)
                 else:
                     print(f"{Fore.YELLOW}[!] Skipping Lydia checks...")
+                
+                
+                print(f"\n{Fore.YELLOW}----- Launching searchX research -----")
+                init_search(args.phone, "phone")
+                
                 
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
