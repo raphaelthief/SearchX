@@ -1124,6 +1124,43 @@ def linktree(email):
         print(f"{R}[x] linktr.ee")
 
 
+def nouslibertin(email):
+    headers = {
+        "Host": "www.placelibertine.com",
+        "Sec-Ch-Ua-Platform": "\"Windows\"",
+        "Accept-Language": "fr-FR,fr;q=0.9",
+        "Sec-Ch-Ua": "\"Chromium\";v=\"135\", \"Not-A.Brand\";v=\"8\"",
+        "Sec-Ch-Ua-Mobile": "?0",
+        "X-Requested-With": "XMLHttpRequest",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "Origin": "https://www.placelibertine.com",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "https://www.placelibertine.com/",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    }
+    data = {
+        "Inscription[email]": email
+    }
+    
+    response = requests.post("https://www.placelibertine.com/fr/inscription-1", headers=headers, data=data)
+    if response.status_code == 200:
+        try:
+            result = response.json()
+            if "email" in result.get("error", {}):
+                print(f"{G}[+] placelibertine.com")
+            else:
+                print(f"{M}[-] placelibertine.com")
+        except Exception as e:
+            print(f"{R}[x] placelibertine.com")
+    else:
+        print(f"{R}[x] placelibertine.com")
+
+
 
 ############################## PHONE ##############################
 
@@ -1811,6 +1848,56 @@ def cracked(username):
         print(f"{R}[x] cracked.sh")
 
 
+def nouslibertin1(username):
+    
+    print(username)
+    if not (4 <= len(username) <= 15):
+        print(f"{M}[-] placelibertine.com")
+        return
+
+    if not username[0].isalpha():
+        print(f"{M}[-] placelibertine.com")
+        return
+
+    if not username[0].isupper():
+        username = username[0].upper() + username[1:]
+    
+    print(username)
+    headers = {
+        "Host": "www.placelibertine.com",
+        "Sec-Ch-Ua-Platform": "\"Windows\"",
+        "Accept-Language": "fr-FR,fr;q=0.9",
+        "Sec-Ch-Ua": "\"Chromium\";v=\"135\", \"Not-A.Brand\";v=\"8\"",
+        "Sec-Ch-Ua-Mobile": "?0",
+        "X-Requested-With": "XMLHttpRequest",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+        "Origin": "https://www.placelibertine.com",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "https://www.placelibertine.com/",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+    }
+    data = {
+        "Inscription[pseudo]": username
+    }
+    
+    response = requests.post("https://www.placelibertine.com/fr/inscription-1", headers=headers, data=data)
+    if response.status_code == 200:
+        try:
+            result = response.json()
+            if "pseudo" in result.get("error", {}):
+                print(f"{G}[+] placelibertine.com")
+            else:
+                print(f"{M}[-] placelibertine.com")
+        except Exception as e:
+            print(f"{R}[x] placelibertine.com")
+    else:
+        print(f"{R}[x] placelibertine.com")
+
 
 
 
@@ -1846,6 +1933,7 @@ def init_search(target, what):
         sexylib1(target)
         gaym(target)
         lesrebeux(target)
+        nouslibertin(target)
         
     elif what == "phone":
         apple(target)
@@ -1867,3 +1955,4 @@ def init_search(target, what):
         lesrebeux1(target)
         darkforums(target)
         cracked(target)
+        nouslibertin1(target)
