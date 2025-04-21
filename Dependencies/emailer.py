@@ -1155,6 +1155,40 @@ def apple(phone):
         print(f"{R}[x] apple.com (status {response.status_code})")
 
 
+def pagesjaunes(phone):
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=False) 
+            page = browser.new_page()
+
+            url = f"https://www.pagesjaunes.fr/annuaireinverse/recherche?quoiqui={phone}&univers=annuaireinverse&idOu="
+            page.goto(url)
+            page.wait_for_load_state('domcontentloaded')
+
+            print(page.content())
+
+            try:
+                no_result = page.query_selector("h1.wording-no-responses")
+                if no_result:
+                    print(f"{M}[-] pagesjaunes.fr")
+                else:
+                    print(f"{G}[+] pagesjaunes.fr")
+                    print(f"{C} └─ {G}Visit : https://www.pagesjaunes.fr/annuaireinverse/recherche?quoiqui={phone}&univers=annuaireinverse&idOu=")
+            except:
+                print(f"{R}[x] pagesjaunes.fr")
+                print(f"{C} ├─ {R}Try : https://www.pagesjaunes.fr/annuaireinverse/recherche?quoiqui={phone}&univers=annuaireinverse&idOu=")
+            browser.close()
+
+    except Exception as e:
+        print(f"{R}[x] pagesjaunes.fr")
+        print(f"{C} ├─ {R}Try : https://www.pagesjaunes.fr/annuaireinverse/recherche?quoiqui={phone}&univers=annuaireinverse&idOu=")
+
+    
+    
+    
+    
+    
+    
 
 ############################## USERNAME ##############################
 def gravatar1(username):
@@ -1716,6 +1750,7 @@ def init_search(target, what):
         
     elif what == "phone":
         apple(target)
+        pagesjaunes(target)
         
     elif what == "username":
         gravatar1(target)
@@ -1731,5 +1766,3 @@ def init_search(target, what):
         sexylib(target)
         gaym1(target)
         lesrebeux1(target)
-        
-   
