@@ -1124,7 +1124,7 @@ def linktree(email):
         print(f"{R}[x] linktr.ee")
 
 
-def nouslibertin(email):
+def placelibertine(email):
     headers = {
         "Host": "www.placelibertine.com",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -1160,6 +1160,66 @@ def nouslibertin(email):
     else:
         print(f"{R}[x] placelibertine.com")
 
+
+def nouslib(email):
+    session = requests.Session()
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+    }
+
+    url_step1 = 'https://www.nouslib.com/inscription'
+    response1 = session.get(url_step1, headers=headers)
+    soup1 = BeautifulSoup(response1.text, 'html.parser')
+
+    authenticity_token_1 = soup1.find('input', {'name': 'authenticity_token'})['value']
+    #print("Token 1:", authenticity_token_1)
+
+    url_post_step1 = 'https://www.nouslib.com/inscription/step/1'
+    data_step1 = {
+        '_method': 'patch',
+        'authenticity_token': authenticity_token_1,
+        'registration[user_type_id]': '2',
+        'registration[seek_couple]': '1',
+        'registration[seek_female]': '0',
+        'registration[seek_male]': '0',
+        'registration[seek_shemale]': '0',
+        'registration[f_age]': '19',
+        'registration[m_age]': '',
+        'registration[username]': 'testsdfsdf',
+        'registration[country_id]': '1',
+        'registration[zip_code]': '75001',
+        'registration[city_id]': '118360'
+    }
+    response2 = session.post(url_post_step1, data=data_step1, headers=headers)
+    
+    if not response2.status_code == 422:
+        print(f"{R}[x] nouslib.com")
+        return
+    
+    soup2 = BeautifulSoup(response2.text, 'html.parser')
+
+    authenticity_token_2 = soup2.find('input', {'name': 'authenticity_token'})['value']
+    #print("Token 2:", authenticity_token_2)
+
+    url_post_step2 = 'https://www.nouslib.com/inscription/step/2'
+    data_step2 = {
+        '_method': 'patch',
+        'authenticity_token': authenticity_token_2,
+        'registration[email]': email,
+        'registration[password]': '',
+        'registration[conditions]': '1',
+        'registration[settings_email_other]': '0'
+    }
+    response3 = session.post(url_post_step2, data=data_step2, headers=headers)
+
+    if response3.status_code == 422:
+        if "est déjà utilisé." in response3.text:
+            print(f"{G}[+] nouslib.com")
+        else:
+            print(f"{M}[-] nouslib.com")
+    else:
+        print(f"{R}[x] nouslib.com")
+        
 
 
 ############################## PHONE ##############################
@@ -1848,7 +1908,7 @@ def cracked(username):
         print(f"{R}[x] cracked.sh")
 
 
-def nouslibertin1(username):
+def placelibertine1(username):
     
     print(username)
     if not (4 <= len(username) <= 15):
@@ -1933,7 +1993,8 @@ def init_search(target, what):
         sexylib1(target)
         gaym(target)
         lesrebeux(target)
-        nouslibertin(target)
+        placelibertine(target)
+        nouslib(target)
         
     elif what == "phone":
         apple(target)
@@ -1955,4 +2016,5 @@ def init_search(target, what):
         lesrebeux1(target)
         darkforums(target)
         cracked(target)
-        nouslibertin1(target)
+        placelibertine1(target)
+
