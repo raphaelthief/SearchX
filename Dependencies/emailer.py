@@ -1290,8 +1290,6 @@ def pagesjaunes(phone):
             page.goto(url)
             page.wait_for_load_state('domcontentloaded')
 
-            print(page.content())
-
             try:
                 no_result = page.query_selector("h1.wording-no-responses")
                 if no_result:
