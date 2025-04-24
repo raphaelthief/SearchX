@@ -38,3 +38,4 @@ cloudscraper
 pymupdf
 ignorant
 pdfplumber
+brotli httpx[http2]
