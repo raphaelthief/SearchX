@@ -39,6 +39,7 @@ from Dependencies.scamtel import getscamtel
 from Dependencies.crawl_emails_phone import get_emails_phones
 from Dependencies.lydia import proceed
 from Dependencies.emailer import init_search
+from Dependencies.breachvip import breachvip_init
 
 # colorama
 from colorama import init, Fore, Style
@@ -816,7 +817,10 @@ def main():
         if args.password:
             print(f"{Fore.YELLOW}----- Connect db api : {Fore.GREEN}https://breachdirectory.org/passwords{Fore.YELLOW} -----")
             passwordtest(args.password)
-            
+
+            print(f"\n{Fore.YELLOW}----- Launching breachvip research -----")
+            breachvip_init(args.password, "Password")
+
         if args.email:
             try:
                 print(f"{Fore.YELLOW}----- Launching holehe : {Fore.GREEN}https://github.com/megadose/holehe{Fore.YELLOW} -----")
@@ -838,6 +842,8 @@ def main():
                 print(f"\n{Fore.YELLOW}----- Launching searchX research -----")
                 init_search(args.email, "email")
                 
+                print(f"\n{Fore.YELLOW}----- Launching breachvip research -----")
+                breachvip_init(args.email, "Email")
                 
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://epieos.com/")
@@ -869,7 +875,9 @@ def main():
                 print(f"\n{Fore.YELLOW}----- Launching searchX research -----")
                 init_search(args.username, "username")
 
-
+                print(f"\n{Fore.YELLOW}----- Launching breachvip research -----")
+                breachvip_init(args.username, "Username")
+                
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
 
@@ -886,6 +894,9 @@ def main():
                 print(f"{Fore.YELLOW}----- Launching social medias : {Fore.GREEN}instagram, facebook, twitter, linkedin{Fore.YELLOW} -----")
                 namesID(args.name, args.lastname)
 
+                print(f"\n{Fore.YELLOW}----- Launching breachvip research -----")
+                breachvip_init(args.lastname, "Name")
+
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
                 sys.exit(0)
@@ -893,6 +904,7 @@ def main():
 
         if args.phone:
             try:
+   
                 basicinfos(args.phone)
                 print(f"{Fore.YELLOW}----- Launching ignorant : {Fore.GREEN}https://github.com/megadose/ignorant{Fore.YELLOW} -----") # Bug
                 print(f"[!] Checking dependencies ...")
@@ -919,6 +931,8 @@ def main():
                 print(f"\n{Fore.YELLOW}----- Launching searchX research -----")
                 init_search(args.phone, "phone")
                 
+                print(f"\n{Fore.YELLOW}----- Launching breachvip research -----")
+                breachvip_init(args.phone[3:], "Phone")
                 
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
@@ -942,12 +956,17 @@ def main():
                     
                     for key, value in response.items():
                         print(f"{Fore.YELLOW}{key} : {Fore.GREEN}{value}")
-                
                     
                     if hasattr(response, "text"):
                         print(f"\n{Fore.GREEN}[+] {Fore.YELLOW}Large output aviable{Fore.GREEN}")
                         print(response.text)
-    
+
+                    print(f"\n{Fore.YELLOW}----- Launching breachvip research -----")
+                    print(f"[!] Trying IP search ...")
+                    breachvip_init(args.ip, "IP")
+                    print(f"[!] Trying Domain search ...")
+                    breachvip_init(args.ip, "Domain")
+
                 except Exception as e:
                     print(f"\n{Fore.RED}[!] Error : {e}")
 
