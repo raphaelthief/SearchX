@@ -1221,6 +1221,20 @@ def nouslib(email):
         print(f"{R}[x] nouslib.com")
         
 
+def espritlib(email):
+    try:
+        response = requests.get(f"http://www.espritlib.com/v2/verif_email.php?email={email}")
+        text = response.text.strip()
+
+        if text == "1":
+            print(f"{G}[+] espritlib.com")
+        elif text == "2":
+            print(f"{M}[-] espritlib.com")
+        else:
+            print(f"{R}[x] espritlib.com")
+    except Exception as e:
+        print(f"{R}[x] espritlib.com")
+
 
 ############################## PHONE ##############################
 
@@ -1993,6 +2007,7 @@ def init_search(target, what):
         lesrebeux(target)
         placelibertine(target)
         nouslib(target)
+        espritlib(email)
         
     elif what == "phone":
         apple(target)
