@@ -40,6 +40,8 @@ from Dependencies.crawl_emails_phone import get_emails_phones
 from Dependencies.lydia import proceed
 from Dependencies.emailer import init_search
 from Dependencies.breachvip import breachvip_init
+from Dependencies.cybernews import init_cybernews
+
 
 # colorama
 from colorama import init, Fore, Style
@@ -831,6 +833,8 @@ def main():
                 blackbirdhunt(args.email, "email")
                 
                 leackcheck(args.email)
+                init_cybernews(args.email, "email")
+                
                 scam(args.email)
 
                 print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
@@ -878,6 +882,8 @@ def main():
                 print(f"\n{Fore.YELLOW}----- Launching breachvip research -----")
                 breachvip_init(args.username, "Username")
                 
+                leackcheck(args.username)
+                
                 print(f"\n{Fore.YELLOW}[!] Urls to visit")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
 
@@ -904,7 +910,7 @@ def main():
 
         if args.phone:
             try:
-   
+
                 basicinfos(args.phone)
                 print(f"{Fore.YELLOW}----- Launching ignorant : {Fore.GREEN}https://github.com/megadose/ignorant{Fore.YELLOW} -----") # Bug
                 print(f"[!] Checking dependencies ...")
@@ -933,6 +939,25 @@ def main():
                 
                 print(f"\n{Fore.YELLOW}----- Launching breachvip research -----")
                 breachvip_init(args.phone[3:], "Phone")
+
+                # VF sorry les gars
+                if args.phone.startswith("+33"):
+                    reste = args.phone[3:]
+                    if not reste.startswith("0"):
+                        leakcheck_format = "0" + reste
+                    else:
+                        leakcheck_format = reste
+                elif not args.phone.startswith("0"):
+                    leakcheck_format = "0" + args.phone
+                leackcheck(leakcheck_format)
+                
+                # VF sorry les gars
+                if "+33" in args.phone:
+                    reste = args.phone[3:]
+                    if reste.startswith("0"):
+                        reste = reste[1:]  
+                    cybernews_format = "33" + reste
+                init_cybernews(cybernews_format, "phone")
                 
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
