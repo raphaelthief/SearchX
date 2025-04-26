@@ -1971,6 +1971,58 @@ def placelibertine1(username):
         print(f"{R}[x] placelibertine.com")
 
 
+def gareauxlibertins(username):
+    headers = {
+        "Host": "www.gareauxlibertins.com",
+        "Sec-Ch-Ua-Platform": "\"Windows\"",
+        "Accept-Language": "fr-FR,fr;q=0.9",
+        "Sec-Ch-Ua": "\"Chromium\";v=\"135\", \"Not-A.Brand\";v=\"8\"",
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Sec-Ch-Ua-Mobile": "?0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+        "Origin": "https://www.gareauxlibertins.com",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "https://www.gareauxlibertins.com/inscription.php",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Priority": "u=1, i",
+        "Connection": "keep-alive"
+    }
+
+    data = {
+        "val_1": "pseudo",
+        "val_2": username,
+        "val_3": "6",
+        "val_4": "",
+        "val_5": "undefined"
+    }
+
+    response = requests.post("https://www.gareauxlibertins.com/include/membres/check.php", headers=headers, data=data)
+
+    match = re.search(r'\$\(\"\#erreur_pseudo\"\)\.html\(\'(.*?)\'\);', response.text)
+
+    if match:
+        contenu = match.group(1).strip()
+        if contenu:
+            print(f"{G}[+] gareauxlibertins.com")
+        else:
+            print(f"{M}[-] gareauxlibertins.com")
+    else:
+        print(f"{R}[x] gareauxlibertins.com")
+        
+
+def adultfriendfinder(username):
+    response = requests.get(f"https://adultfriendfinder.com/p/register.cgi?action=check_handle&REG_handle={username}&do_json=1&sitelist=ffadult&rid=4399401002")
+    data = response.json()
+    if data.get("available") == 1:
+        print(f"{M}[-] adultfriendfinder.com")
+    elif data.get("available") == 0:
+        print(f"{G}[+] adultfriendfinder.com")
+    else:
+        print(f"{R}[x] adultfriendfinder.com")
+
 
 
 def init_search(target, what):
@@ -2007,7 +2059,7 @@ def init_search(target, what):
         lesrebeux(target)
         placelibertine(target)
         nouslib(target)
-        espritlib(email)
+        espritlib(target)
         
     elif what == "phone":
         apple(target)
@@ -2030,4 +2082,6 @@ def init_search(target, what):
         darkforums(target)
         cracked(target)
         placelibertine1(target)
+        gareauxlibertins(target)
+        adultfriendfinder(target)
 
