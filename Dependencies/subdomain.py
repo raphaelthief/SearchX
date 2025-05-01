@@ -20,8 +20,33 @@ def detect_login_page(content):
 
 
 # Target subdomains enum
-def subreponse(domain):
+def subreponse(domain, api_key):
+    print(f"{Fore.YELLOW}[!] Subdomains for {Fore.CYAN}{domain}")
+    with open(api_key, 'r') as f:
+        token = f.read().strip()
+        if token == '':
+            pass
+        else:    
+            print(f"{Fore.YELLOW}[!] Source : https://www.virustotal.com/")
+            
+            url = 'https://www.virustotal.com/vtapi/v2/domain/report'
+            params = {'apikey':token,'domain':domain}
+            try:
+                response = requests.get("https://www.virustotal.com/vtapi/v2/domain/report", params=params)
+                jdata = response.json()
+                domains = sorted(jdata['subdomains'])
+            except(KeyError):
+                print(f"{Fore.MAGENTA}[!] {Fore.GREEN}No subdomains found for {Fore.YELLOW}{domain}\n")
+                pass
+            except(requests.ConnectionError):
+                print(f"{Fore.RED}[!] Rate limit error")
+                pass
+
+            for domainz in domains:
+                print(f"{Fore.GREEN}[+] {Fore.CYAN}{domainz}")
+            print("")
     
+    print(f"{Fore.YELLOW}[!] Source : https://crt.sh/")
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }    
@@ -70,8 +95,6 @@ def subreponse(domain):
         print(f"{Fore.MAGENTA}[!] {Fore.GREEN}No subdomains found for {Fore.YELLOW}{domain}")
         return
 
-    print(f"{Fore.MAGENTA}[!] {Fore.GREEN}Subdomains for {Fore.YELLOW}{domain}")
-    print(f"{Fore.MAGENTA}[?] {Fore.GREEN}Source : {Fore.YELLOW}crt.sh")
     print("-" * 50)
     
     for cert in certificates.values():
@@ -113,3 +136,4 @@ def subreponse(domain):
         print("-" * 50)
         
         time.sleep(0.5)
+        
