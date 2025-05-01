@@ -41,6 +41,7 @@ from Dependencies.lydia import proceed
 from Dependencies.emailer import init_search
 from Dependencies.breachvip import breachvip_init
 from Dependencies.cybernews import init_cybernews
+from Dependencies.annuaire import annuaire_search
 
 
 # colorama
@@ -678,6 +679,7 @@ def main():
         parser.add_argument('--username',  help='search username (blackbird)')
         parser.add_argument('--name',  help='search first and last name (--lastname needed)')
         parser.add_argument('--lastname',  help='search first and last name (--name needed)')
+        parser.add_argument('--where',  help='search first and last name with location (--name & --lastname needed)')
         parser.add_argument('--exploit', nargs='*', help='Search for vulnerabilities (--exploit "description" "CVE-ID" "port_number" : --exploit "eternalblue" OR --exploit "eternalblue" "" "445")')
         parser.add_argument('--dorks',  help='Search for Google Dorks (--dorks "index off")')
         parser.add_argument('--cve', nargs='*', help='Search for cve (--cve "search query" "CVE-ID")')
@@ -894,6 +896,13 @@ def main():
             
         if (args.name and not args.lastname) or (args.lastname and not args.name):
             print(f"{Fore.RED}Error : Launching social medias fail. args --name and --lastname needed\n")
+
+        if args.where:
+            if not (args.name and args.lastname):
+                print(f"{Fore.RED}Error : args --name and --lastname needed\n")
+            else:
+                print(f"{Fore.YELLOW}----- Launching 118000 annuaire search -----")
+                annuaire_search(args.lastname, args.name, args.where)
 
         if args.name and args.lastname:
             try:
