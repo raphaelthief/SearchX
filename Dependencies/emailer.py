@@ -2023,6 +2023,59 @@ def adultfriendfinder(username):
     else:
         print(f"{R}[x] adultfriendfinder.com")
 
+def vinted(username):
+    session = requests.Session()
+
+    headers = {
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+    }
+
+    initial_url = "https://www.vinted.com/"
+    initial_response = session.get(initial_url, headers=headers)
+
+    api_url = f"https://www.vinted.com/api/v2/users/{username}"
+    api_response = session.get(api_url, headers=headers)
+
+    if api_response.status_code == 200:
+        print(f"{G}[+] vinted.com")
+        infos = api_response.json().get("user", {})
+
+        print(f"{C} ├─ {G}Id                :{Y} "+str(infos.get("id", "N/A")) + " | login : "+str(infos.get("login", "N/A")))
+        print(f"{C} ├─ {G}Anon id           :{Y} "+str(infos.get("anon_id", "N/A")))
+        print(f"{C} ├─ {G}Profile url       :{Y} "+str(infos.get("profile_url", "N/A")))
+        print(f"{C} ├─ {G}Is online         :{Y} "+str(infos.get("is_online", "N/A")))
+        print(f"{C} ├─ {G}Is account banned :{Y} "+str(infos.get("is_account_banned", "N/A")))
+        print(f"{C} ├─ {G}Account ban date  :{Y} "+str(infos.get("account_ban_date", "N/A")))
+        print(f"{C} ├─ {G}Permanant ban     :{Y} "+str(infos.get("is_account_ban_permanent", "N/A")))
+        
+        print(f"{C} ├─ {G}Email             :{Y} "+str(infos.get("email", "N/A")))
+        print(f"{C} ├─ {G}Facebook user id  :{Y} "+str(infos.get("facebook_user_id", "N/A")))
+        print(f"{C} ├─ {G}Birthday          :{Y} "+str(infos.get("birthday", "N/A")))
+        print(f"{C} ├─ {G}Item count        :{Y} "+str(infos.get("item_count", "N/A")))
+        print(f"{C} ├─ {G}Followers         :{Y} "+str(infos.get("followers_count", "N/A")))
+        print(f"{C} ├─ {G}Following         :{Y} "+str(infos.get("following_count", "N/A")))
+        print(f"{C} ├─ {G}Last logged on    :{Y} "+str(infos.get("last_loged_on_ts", "N/A")))
+        print(f"{C} ├─ {G}City              :{Y} "+str(infos.get("city", "N/A")))
+        print(f"{C} ├─ {G}Country           :{Y} "+str(infos.get("country_title", "N/A")))
+
+        photo = infos.get("photo")
+        if photo:
+            print(f"{C} ├─ {G}Profile picture   :{Y} "+str(photo.get("url", "N/A")))
+        else:
+            print(f"{C} ├─ {G}Profile picture   :{Y} None")
+        
+        print(f"{C} └─ {G}Verification types")
+        for v_type, v_info in infos.get("verification", {}).items():
+            line = f"{v_type} "
+            for k, val in v_info.items():
+                print(f"{C}    ├─ {G}{line} --> {k} :{Y} {val}")
+
+
+    elif api_response.status_code == 404:
+        print(f"{M}[-] vinted.com")
+    
+    else:
+        print(f"{R}[x] vinted.com")
 
 
 def init_search(target, what):
@@ -2084,4 +2137,5 @@ def init_search(target, what):
         placelibertine1(target)
         gareauxlibertins(target)
         adultfriendfinder(target)
+        vinted(target)
 
