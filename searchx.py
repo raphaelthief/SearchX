@@ -1007,7 +1007,7 @@ def main():
             
         if args.subdomain:
             try:
-                subreponse(args.subdomain)
+                subreponse(args.subdomain, 'Tokens/virustotal_token.txt')
                 getwatweb(args.subdomain)
             
             except KeyboardInterrupt:
