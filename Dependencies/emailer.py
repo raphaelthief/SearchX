@@ -1236,9 +1236,32 @@ def espritlib(email):
         print(f"{R}[x] espritlib.com")
 
 
+def vivaflirt(email):
+    try:
+        headers = {
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": "https://www.vivaflirt.fr/",
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/javascript, */*; q=0.01"
+        }
+        
+        response = requests.get(f"https://www.vivaflirt.fr/members/ajax_check_email?email={email}", headers=headers)
+        text = response.text.strip()
+        data = response.json()
+
+        if data.get("is_success") == 0 and data.get("error", {}).get("code") == 106:
+            print(f"{G}[+] vivaflirt.fr")
+        elif data.get("is_success") == 1:
+            print(f"{M}[-] vivaflirt.fr")
+        else:
+            print(f"{R}[x] vivaflirt.fr")
+    except Exception as e:
+        print(f"{R}[x] vivaflirt.fr")
+
+
 ############################## PHONE ##############################
 
-def apple(phone):
+def apple1(phone):
     if phone[3] == '0':
         phone_format = phone[:3] + phone[4:]
     else:
@@ -2040,7 +2063,8 @@ def vinted(username):
         print(f"{G}[+] vinted.com")
         infos = api_response.json().get("user", {})
 
-        print(f"{C} ├─ {G}Id                :{Y} "+str(infos.get("id", "N/A")) + " | login : "+str(infos.get("login", "N/A")))
+        print(f"{C} ├─ {G}Id                :{Y} "+str(infos.get("id", "N/A")))
+        print(f"{C} ├─ {G}Login             :{Y} "+str(infos.get("login", "N/A")))
         print(f"{C} ├─ {G}Anon id           :{Y} "+str(infos.get("anon_id", "N/A")))
         print(f"{C} ├─ {G}Profile url       :{Y} "+str(infos.get("profile_url", "N/A")))
         print(f"{C} ├─ {G}Is online         :{Y} "+str(infos.get("is_online", "N/A")))
@@ -2078,6 +2102,68 @@ def vinted(username):
         print(f"{R}[x] vinted.com")
 
 
+def vivino1(username):
+    headers = {
+        "Host": "api.vivino.com",
+        "Sec-Ch-Ua": '"Chromium";v="135", "Not-A.Brand";v="8"',
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": '"Windows"',
+        "Accept-Language": "fr-FR,fr;q=0.9",
+        "Upgrade-Insecure-Requests": "1",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-User": "?1",
+        "Sec-Fetch-Dest": "document",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Priority": "u=0, i"
+    }
+    
+    try:
+        response = requests.get(f"https://api.vivino.com/users/{username}", headers=headers)
+        if response.status_code == 404:
+            print(f"{M}[-] vivino.com")
+            return
+            
+        response.raise_for_status()
+        data = response.json()
+
+        if "error" in data:
+            print(f"{M}[-] vivino.com")
+        else:
+            print(f"{G}[+] vivino.com")
+            print(f"{C} ├─ {G}Alias             :{Y} {data['alias']}")
+            print(f"{C} ├─ {G}ID                :{Y} {data['id']}")
+            print(f"{C} ├─ {G}Profile image     :{Y} {data['image']['location']}")
+            
+            print(f"{C} ├─ {G}Bio               :{Y} {data.get('bio', 'N/A')}")
+            print(f"{C} ├─ {G}Website           :{Y} {data.get('website', 'N/A')}")
+
+            address = data.get('address', {})
+            print(f"{C} ├─ {G}Country           :{Y} {address.get('country', 'N/A')}")
+            print(f"{C} │   ├─ {G}City          :{Y} {address.get('city', 'N/A')}")
+            print(f"{C} │   ├─ {G}Zip           :{Y} {address.get('zip', 'N/A')}")
+            print(f"{C} │   ├─ {G}Street        :{Y} {address.get('street', 'N/A')}")
+            print(f"{C} │   ├─ {G}State         :{Y} {address.get('state', 'N/A')}")
+            print(f"{C} │   ├─ {G}Phone         :{Y} {address.get('phone', 'N/A')}")
+            print(f"{C} │   ├─ {G}Company       :{Y} {address.get('company', 'N/A')}")
+            print(f"{C} │   └─ {G}VAT Number    :{Y} {address.get('vat_number', 'N/A')}")
+
+            stats = data.get('statistics', {})
+            print(f"{C} ├─ {G}Followers         :{Y} {stats.get('followers_count', 0)}")
+            print(f"{C} ├─ {G}Following         :{Y} {stats.get('followings_count', 0)}")
+            print(f"{C} ├─ {G}Ratings given     :{Y} {stats.get('ratings_count', 0)}")
+            print(f"{C} ├─ {G}Ratings total sum :{Y} {stats.get('ratings_sum', 0)}")
+            print(f"{C} ├─ {G}Reviews           :{Y} {stats.get('reviews_count', 0)}")
+            print(f"{C} ├─ {G}Purchases         :{Y} {stats.get('purchase_order_count', 0)}")
+            print(f"{C} ├─ {G}Wishlist items    :{Y} {stats.get('wishlist_count', 0)}")
+            print(f"{C} └─ {G}Activity stories  :{Y} {stats.get('activity_stories_count', 0)}")
+            
+    except Exception as e:
+        print(f"{R}[x] vivino.com")
+
+
 def init_search(target, what):
     if what == "email":
         paypal(target)
@@ -2113,9 +2199,10 @@ def init_search(target, what):
         placelibertine(target)
         nouslib(target)
         espritlib(target)
+        vivaflirt(target)
         
     elif what == "phone":
-        apple(target)
+        apple1(target)
         pagesjaunes(target)
         
     elif what == "username":
@@ -2138,4 +2225,6 @@ def init_search(target, what):
         gareauxlibertins(target)
         adultfriendfinder(target)
         vinted(target)
+        vivino1(target)
+
 
