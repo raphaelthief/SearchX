@@ -938,7 +938,7 @@ def main():
                 
                 next_action = input(f"\n{Fore.YELLOW}[!] {Fore.RED}Exploiting Lydia misconfiguration may notify the user anonymously. Do you want to proceed ? {Fore.YELLOW}(y/n) : {Fore.GREEN}")
                 if next_action.lower() == "y":  
-                    proceed(args.phone)
+                    proceed(phone_format)
                 else:
                     print(f"{Fore.YELLOW}[!] Skipping Lydia checks...")
                 
