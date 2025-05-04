@@ -15,30 +15,19 @@ def proceed(phone_info):
         "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
     }
 
-    def find_pots_urls():
+    def fetch_all_pots_links():
         url = "https://search.brave.com/search?q=https%3A%2F%2Fpots.lydia.me%2Fcollect%2Fpots%3Fid%3D&source=web"
-        response = requests.get(url)
-        if response.status_code == 200:
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
             soup = BeautifulSoup(response.text, "html.parser")
             links = soup.find_all("a", href=True)
             pots_links = [link['href'] for link in links if "/collect/" in link['href']]
-            for pot_url in pots_links:
-                if not pot_url in dico:
-                    print(f"➡️ Testing URL : {pot_url}")
-                    pot_response = requests.get(pot_url)
-                    if "error?code=" not in pot_response.url:
-                        print(f"✅ Valid pot found : {pot_url}")
-                        match = re.search(r"/collect/([^/?]+)", pot_url)
-                        if match:
-                            slug = match.group(1)
-                            print(f"🔹 Extracted slug: {slug}\n")
-                            dico.append(pot_url)
-                            return slug
-                    else:
-                        print(f"❌ Error with URL : {pot_url}")
-        print(repsonse.text)
-        print("❌ No pots found")
-        return None
+            print(f"✅ {len(pots_links)} pot links found.")
+            return pots_links
+        except requests.exceptions.RequestException as e:
+            print(f"❌ Error fetching Brave Search: {e}")
+            return []
 
     def get_uuid(slug):
         data = {
@@ -50,16 +39,16 @@ def proceed(phone_info):
             "payment_method": "lydia"
         }
 
-        for attempt in range(3):
-            response = requests.post("https://pots.lydia.me/collect/createrequest?", 
+        for attempt in range(2):
+            response = requests.post("https://pots.lydia.me/collect/createrequest?",
                                      headers=headers, data=data, allow_redirects=False)
-            if "Location" in response.headers:
-                match = re.search(r"/collect/payment/([a-f0-9]{32})/", response.headers["Location"])
-                if match:
-                    uuid = match.group(1)
-                    print(f"✅ UUID retrieved : {uuid}")
-                    return uuid
-            print(f"❌ No redirection detected (attempt {attempt + 1}/3), retrying...")
+            location = response.headers.get("Location", "")                         
+            match = re.search(r"/collect/payment/([a-fA-F0-9]{32})/", location)
+            if match:
+                uuid = match.group(1)
+                print(f"✅ UUID retrieved : {uuid}")
+                return uuid
+            print(f"❌ No redirection detected (attempt {attempt + 1}/2), retrying...")
             time.sleep(2)
         return None
 
@@ -79,18 +68,31 @@ def proceed(phone_info):
         else:
             print("❌ Not found")
 
+    pots_links = fetch_all_pots_links()
+    if not pots_links:
+        print("⛔ No links to test. Aborting.")
+        return
 
-    for outer_attempt in range(3):
-        print(f"\n🔄 Attempt {outer_attempt + 1}/3 to get slug & UUID...")
-        slug_ID = find_pots_urls()
-        if not slug_ID:
-            print("⛔ No slug found. Breaking...")
-            break
-
-        uuid = get_uuid(slug_ID)
-        if uuid:
-            get_first_name(uuid)
-            break
-        else:
-            print("❌ UUID not found with this slug, retrying...")
-            time.sleep(2)
+    for i, pot_url in enumerate(pots_links[:6], start=1):
+        print(f"🔄 Attempt {i}/6")
+        if pot_url in dico:
+            continue
+        dico.append(pot_url)
+        print(f"➡️ Testing URL : {pot_url}")
+        try:
+            pot_response = requests.get(pot_url, headers=headers)
+            if "error?code=" not in pot_response.url:
+                match = re.search(r"/collect/([^/?]+)", pot_url)
+                if match:
+                    slug = match.group(1)
+                    print(f"🔹 Extracted slug: {slug}")
+                    uuid = get_uuid(slug)
+                    if uuid:
+                        get_first_name(uuid)
+                        break
+                    else:
+                        print("❌ UUID not found.")
+            else:
+                print("❌ Invalid pot link.")
+        except Exception as e:
+            print(f"⚠️ Error testing pot URL: {e}")
