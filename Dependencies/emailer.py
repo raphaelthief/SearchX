@@ -1259,6 +1259,44 @@ def vivaflirt(email):
         print(f"{R}[x] vivaflirt.fr")
 
 
+def hypnotube(email):
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": "https://hypnotube.com/signup",
+            "Origin": "https://hypnotube.com",
+        }
+
+        data = {
+            "signup_username": "",
+            "signup_password": "",
+            "signup_email": email,
+            "captchaaa": "",
+            "signup_tos": "",
+            "Submit": ""
+        }
+
+        response = requests.post("https://hypnotube.com/signup", headers=headers, data=data)
+
+        # Analyse HTML avec BeautifulSoup
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Recherche du message d'erreur
+        notification = soup.find('div', class_='notification error')
+        if notification:
+            error_text = notification.get_text(separator=' ').strip()
+
+            if "email" in error_text.lower():
+                print(f"{G}[+] hypnotube.com")
+            else:
+                print(f"{M}[-] hypnotube.com")
+        else:
+            print(f"{R}[x] hypnotube.com")
+    except Exception as e:
+        print(f"{R}[x] hypnotube.com")
+
+
 ############################## PHONE ##############################
 
 def apple1(phone):
@@ -1502,22 +1540,60 @@ def instagram1(username):
 
 
 def chess1(username):
-    response = requests.get(f"https://www.chess.com/callback/leagues/user-league/search/{username}")
-    data = response.json()
-    if data:
-        username_ext = data.get("username", "N/A")    
-        country = data.get("country", "N/A")
-        avatar = data.get("avatar", "N/A")
+    try:
         
-        print(f"{G}[+] chess.com")
-        print(f"{C} ├─ {G}Username : {username_ext}")
-        print(f"{C} ├─ {G}Country  : {country}")
-        print(f"{C} ├─ {G}Avatar   : {avatar}")
-        print(f"{C} ├─ {G}Profile  : https://www.chess.com/member/{username}")
-    elif response.status_code == 429:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " 
+                          "AppleWebKit/537.36 (KHTML, like Gecko) "
+                          "Chrome/123.0.0.0 Safari/537.36",
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": "https://www.chess.com/",
+            "Origin": "https://www.chess.com",
+            "Connection": "keep-alive"
+        }
+        
+        
+        response = requests.get(f"https://www.chess.com/callback/leagues/user-league/search/{username}", headers=headers)
+        if response.status_code == 200:
+            try:
+                data = response.json()
+                username_ext = data.get("username", "N/A")    
+                country = data.get("country", "N/A")
+                avatar = data.get("avatar", "N/A")
+                
+                print(f"{G}[+] chess.com")
+                print(f"{C} ├─ {G}Username : {username_ext}")
+                print(f"{C} ├─ {G}Country  : {country}")
+                print(f"{C} ├─ {G}Avatar   : {avatar}")
+                print(f"{C} ├─ {G}Profile  : https://www.chess.com/member/{username}")
+            except ValueError:
+                print(f"{M}[-] chess.com: Invalid JSON in primary response")
+        elif response.status_code == 429:
+            print(f"{R}[x] chess.com (Rate limited)")
+        else:
+            response2 = requests.get(f"https://api.chess.com/pub/player/{username}", headers=headers)
+            if response2.status_code == 200:
+                try:
+                    data2 = response2.json()
+                    username_ext = data2.get("username", "N/A")    
+                    country = data2.get("country", "N/A")
+                    ID = data2.get("player_id", "N/A")
+                    print(f"{G}[+] chess.com")
+                    print(f"{C} ├─ {G}Username : {username_ext}")
+                    print(f"{C} ├─ {G}Country  : {country}")
+                    print(f"{C} ├─ {G}ID       : {ID}")
+                    print(f"{C} ├─ {G}Profile  : https://www.chess.com/member/{username}")
+                except ValueError:
+                    print(f"{R}[x] chess.com (Capcha)")
+            elif response2.status_code == 429:
+                print(f"{R}[x] chess.com (Rate limited)")
+            elif response2.status_code == 404:
+                print(f"{M}[-] chess.com")
+            else:
+                print(f"{R}[x] chess.com (Capcha)")
+    except requests.RequestException as e:
         print(f"{R}[x] chess.com")
-    else:
-        print(f"{M}[-] chess.com")
 
 
 def mym(username):
@@ -1944,8 +2020,6 @@ def cracked(username):
 
 
 def placelibertine1(username):
-    
-    print(username)
     if not (4 <= len(username) <= 15):
         print(f"{M}[-] placelibertine.com")
         return
@@ -1957,7 +2031,6 @@ def placelibertine1(username):
     if not username[0].isupper():
         username = username[0].upper() + username[1:]
     
-    print(username)
     headers = {
         "Host": "www.placelibertine.com",
         "Sec-Ch-Ua-Platform": "\"Windows\"",
@@ -2163,6 +2236,47 @@ def vivino1(username):
     except Exception as e:
         print(f"{R}[x] vivino.com")
 
+def hypnotube1(username):
+    try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Referer": "https://hypnotube.com/signup",
+            "Origin": "https://hypnotube.com",
+        }
+
+        data = {
+            "signup_username": username,
+            "signup_password": "",
+            "signup_email": "",
+            "captchaaa": "",
+            "signup_tos": "",
+            "Submit": ""
+        }
+
+        response = requests.post("https://hypnotube.com/signup", headers=headers, data=data)
+
+        # Analyse HTML avec BeautifulSoup
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Recherche du message d'erreur
+        notification = soup.find('div', class_='notification error')
+        if notification:
+            error_text = notification.get_text(separator=' ').strip()
+
+            if "username" in error_text.lower():
+                print(f"{G}[+] hypnotube.com")
+            else:
+                print(f"{M}[-] hypnotube.com")
+        else:
+            print(f"{R}[x] hypnotube.com")
+    except Exception as e:
+        print(f"{R}[x] hypnotube.com")
+
+
+
+
+
 
 def init_search(target, what):
     if what == "email":
@@ -2200,6 +2314,7 @@ def init_search(target, what):
         nouslib(target)
         espritlib(target)
         vivaflirt(target)
+        hypnotube(target)
         
     elif what == "phone":
         apple1(target)
@@ -2226,5 +2341,5 @@ def init_search(target, what):
         adultfriendfinder(target)
         vinted(target)
         vivino1(target)
-
+        hypnotube1(target)
 
