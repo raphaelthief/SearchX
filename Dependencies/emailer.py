@@ -2274,6 +2274,156 @@ def hypnotube1(username):
         print(f"{R}[x] hypnotube.com")
 
 
+def stripchat(username):
+    headers = {
+        "Host": "fr.stripchat.com",
+        "Sec-Ch-Ua-Platform": "\"Windows\"",
+        "Accept-Language": "fr-FR,fr;q=0.9",
+        "Sec-Ch-Ua": "\"Chromium\";v=\"135\", \"Not-A.Brand\";v=\"8\"",
+        "Front-Version": "11.1.72",
+        "Content-Type": "application/json",
+        "Sec-Ch-Ua-Mobile": "?0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "*/*",
+        "Sec-Fetch-Site": "same-origin",
+        "Sec-Fetch-Mode": "cors",
+        "Sec-Fetch-Dest": "empty",
+        "Referer": "https://fr.stripchat.com/",
+        "Accept-Encoding": "gzip, deflate, br",
+    }
+
+    response = requests.get(f"https://fr.stripchat.com/api/front/users/checkUsername?username={username}", headers=headers)
+
+    if response.status_code == 200:
+        if response.text.strip() == "[]":
+            print(f"{M}[-] stripchat.com")
+        else:
+            print(f"{R}[x] stripchat.com")
+    elif response.status_code == 400:
+        if "utilisateur existe" in response.text:
+            print(f"{G}[+] stripchat.com")
+            
+            response = requests.get(f"https://fr.stripchat.com/api/front/v2/users/username/{username}", headers=headers)
+            data = response.json()
+            item = data["item"]
+            ID = item['id']
+            
+            print(f"{C} ├─ {G}ID                   : {Y}{item['id']}")
+            print(f"{C} ├─ {G}isAdmin              : {Y}{item['isAdmin']}")
+            print(f"{C} ├─ {G}isRegular            : {Y}{item['isRegular']}")
+            print(f"{C} ├─ {G}isExGreen            : {Y}{item['isExGreen']}")
+            print(f"{C} ├─ {G}isUltimate           : {Y}{item['isUltimate']}")
+            print(f"{C} ├─ {G}isGreen              : {Y}{item['isGreen']}")
+            print(f"{C} ├─ {G}isModel              : {Y}{item['isModel']}")
+            print(f"{C} ├─ {G}isStudio             : {Y}{item['isStudio']}")
+            print(f"{C} ├─ {G}isSupport            : {Y}{item['isSupport']}")
+            print(f"{C} ├─ {G}isDeleted            : {Y}{item['isDeleted']}")
+            print(f"{C} ├─ {G}isBlocked            : {Y}{item['isBlocked']}")
+            print(f"{C} ├─ {G}isOnline             : {Y}{item['isOnline']}")
+            print(f"{C} ├─ {G}isPermanentlyBlocked : {Y}{item['isPermanentlyBlocked']}")
+            print(f"{C} ├─ {G}hasAdminBadge        : {Y}{item['hasAdminBadge']}")
+            print(f"{C} ├─ {G}hasVrDevice          : {Y}{item['hasVrDevice']}")
+            
+            response2 = requests.get(f"https://fr.stripchat.com/api/front/v2/users/{ID}/profile", headers=headers)
+            data2 = response2.json()
+            item2 = data2["item"]
+            
+            print(f"{C} ├─ {G}name                 : {Y}{item2['name']}")
+            print(f"{C} ├─ {G}birthDate            : {Y}{item2['birthDate']}")
+            print(f"{C} ├─ {G}country              : {Y}{item2['country']}")
+            print(f"{C} ├─ {G}region               : {Y}{item2['region']}")
+            print(f"{C} ├─ {G}city                 : {Y}{item2['city']}")
+            print(f"{C} ├─ {G}cityId               : {Y}{item2['cityId']}")
+            print(f"{C} ├─ {G}languages            : {Y}{item2['languages']}")
+            print(f"{C} ├─ {G}interestedIn         : {Y}{item2['interestedIn']}")
+            print(f"{C} ├─ {G}bodyType             : {Y}{item2['bodyType']}")
+            print(f"{C} ├─ {G}specifics            : {Y}{item2['specifics']}")
+            print(f"{C} ├─ {G}ethnicity            : {Y}{item2['ethnicity']}")
+            print(f"{C} ├─ {G}hairColor            : {Y}{item2['hairColor']}")
+            print(f"{C} ├─ {G}eyeColor             : {Y}{item2['eyeColor']}")
+            print(f"{C} ├─ {G}subculture           : {Y}{item2['subculture']}")
+            print(f"{C} ├─ {G}description          : {Y}{item2['description']}")
+            print(f"{C} ├─ {G}amazonWishlist       : {Y}{item2['amazonWishlist']}")
+            print(f"{C} ├─ {G}age                  : {Y}{item2['age']}")
+            print(f"{C} ├─ {G}interests            : {Y}{item2['interests']}")
+            print(f"{C} ├─ {G}gender               : {Y}{item2['gender']}")
+            print(f"{C} ├─ {G}avatarUrl            : {Y}{item2['avatarUrl']}")
+            print(f"{C} ├─ {G}avatarUrlOriginal    : {Y}{item2['avatarUrlOriginal']}")
+            print(f"{C} └─ {G}createdAt            : {Y}{item2['createdAt']}")
+            
+        else:
+            print(f"{M}[-] stripchat.com")
+    else:
+        print(f"{R}[x] stripchat.com")
+        
+
+def duolingo1(username):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+        "Accept-Language": "fr-FR,fr;q=0.9",
+        "Accept": "application/json",
+    }
+
+    response = requests.get(f"https://www.duolingo.com/2017-06-30/users?username={username}", headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+        if data["users"]:
+            print(f"{G}[+] duolingo.com")
+            user = data["users"][0]
+            print(f"{C} ├─ {G}ID                            : {Y}{user['id']}")
+            print(f"{C} ├─ {G}Username                      : {Y}{user['username']}")
+            print(f"{C} ├─ {G}Name                          : {Y}{user.get('name', '')}")
+            print(f"{C} ├─ {G}From Language                 : {Y}{user.get('fromLanguage', '')}")
+            print(f"{C} ├─ {G}Learning Language             : {Y}{user.get('learningLanguage', '')}")
+            print(f"{C} ├─ {G}Total XP                      : {Y}{user.get('totalXp', 0)}")
+            print(f"{C} ├─ {G}Streak                        : {Y}{user.get('streak', 0)}")
+            print(f"{C} ├─ {G}Bio                           : {Y}{user.get('bio', '')}")
+            print(f"{C} ├─ {G}Location                      : {Y}{user.get('location', '')}")
+            print(f"{C} ├─ {G}Email Verified                : {Y}{user.get('emailVerified', False)}")
+            print(f"{C} ├─ {G}Has Plus                      : {Y}{user.get('hasPlus', False)}")
+            print(f"{C} ├─ {G}Profile Pic URL               : {Y}{user.get('picture', '')}")
+            print(f"{C} ├─ {G}Creation Date (timestamp)     : {Y}{user.get('creationDate')}")
+            print(f"{C} ├─ {G}Beta Status                   : {Y}{user.get('betaStatus')}")
+            print(f"{C} ├─ {G}Motivation                    : {Y}{user.get('motivation')}")
+            print(f"{C} ├─ {G}Acquisition Survey Reason     : {Y}{user.get('acquisitionSurveyReason')}")
+            print(f"{C} ├─ {G}Has Facebook ID               : {Y}{user.get('hasFacebookId')}")
+            print(f"{C} ├─ {G}Has Google ID                 : {Y}{user.get('hasGoogleId')}")
+            print(f"{C} ├─ {G}Has Phone Number              : {Y}{user.get('hasPhoneNumber')}")
+            print(f"{C} ├─ {G}Should Connect Phone Number   : {Y}{user.get('shouldForceConnectPhoneNumber')}")
+            print(f"{C} ├─ {G}Can Use Moderation Tools      : {Y}{user.get('canUseModerationTools')}")
+            print(f"{C} ├─ {G}Shake to Report Enabled       : {Y}{user.get('shakeToReportEnabled')}")
+            print(f"{C} ├─ {G}Current Course ID             : {Y}{user.get('currentCourseId')}")
+            print(f"{C} ├─ {G}Email Verified                : {Y}{user.get('emailVerified')}")
+            print(f"{C} ├─ {G}Classroom Leaderboards Enabled: {Y}{user.get('classroomLeaderboardsEnabled')}")
+            print(f"{C} ├─ {G}Roles                         : {Y}{user.get('roles', [])}")
+            print(f"{C} ├─ {G}Joined Classroom IDs          : {Y}{user.get('joinedClassroomIds', [])}")
+            print(f"{C} ├─ {G}Observed Classroom IDs        : {Y}{user.get('observedClassroomIds', [])}")
+            print(f"{C} ├─ {G}Privacy Settings              : {Y}{user.get('privacySettings', [])}")
+            print(f"{C} ├─ {G}China Moderation Records      : {Y}{user.get('chinaUserModerationRecords', [])}")
+            print(f"{C} ├─ {G}Global Ambassador Status      : {Y}{user.get('globalAmbassadorStatus', {})}")
+            print(f"{C} ├─ {G}Achievements                  : {Y}{user.get('achievements', [])}")
+            print(f"{C} ├─ {G}Achievements (legacy)         : {Y}{user.get('_achievements', [])}")
+            print(f"{C} ├─ {G}Live Ops Features             : {Y}{user.get('liveOpsFeatures', [])}")
+            print(f"{C} ├─ {G}Profile Country               : {Y}{user.get('profileCountry')}")
+            print(f"{C} ├─ {G}Streak Data                   : {Y}{user.get('streakData', {})}")
+            
+            print(f"{C} ├─ {G}Courses:")
+            for course in user.get("courses", []):
+                print(f"{C} │    ├─ {G}Title           : {Y}{course.get('title')}")
+                print(f"{C} │    ├─ {G}Language        : {Y}{course.get('learningLanguage')}")
+                print(f"{C} │    ├─ {G}From Language   : {Y}{course.get('fromLanguage')}")
+                print(f"{C} │    ├─ {G}XP              : {Y}{course.get('xp')}")
+                print(f"{C} │    ├─ {G}Crowns          : {Y}{course.get('crowns')}")
+                print(f"{C} │    ├─ {G}Health Enabled  : {Y}{course.get('healthEnabled')}")
+                print(f"{C} │    ├─ {G}Author ID       : {Y}{course.get('authorId')}")
+                print(f"{C} │    └─ {G}Course ID       : {Y}{course.get('id')}")
+            print(f"{C} └─ {G}End of user data")
+        else:
+            print(f"{M}[-] duolingo.com")
+    else:
+        print(f"{R}[x] duolingo.com")
+
 
 
 
@@ -2342,4 +2492,5 @@ def init_search(target, what):
         vinted(target)
         vivino1(target)
         hypnotube1(target)
-
+        stripchat(target)
+        duolingo1(target)
