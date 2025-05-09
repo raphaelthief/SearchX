@@ -106,7 +106,8 @@ def initialize_progress_bar(total):
 
 
 def update_progress(pbar):
-    pbar.update(1)
+    if pbar:
+        pbar.update(1)
 
 
 
@@ -1106,10 +1107,13 @@ def main():
                 walk_through_directories(args.root, keywords=keywords, num_threads=args.threads, very_verbose=very_verbose, verbose=args.verbose, ignored_extensions=ignored_extensions)
             else:
                 start_time = time.time()
-                all_files = collect_files(args.root, ignored_extensions)
-                with initialize_progress_bar(len(all_files)) as pbar:
-                    print_tree(args.root, pbar, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
-
+                
+                if not (args.keywords or args.strict or args.regex):
+                    print_tree(args.root, pbar=None, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
+                else:    
+                    all_files = collect_files(args.root, ignored_extensions)
+                    with initialize_progress_bar(len(all_files)) as pbar:
+                        print_tree(args.root, pbar, keywords=keywords, regex=args.regex, strict=args.strict, folders_only=args.folders_only, files_only=args.files_only, verbose=args.verbose, ignored_extensions=ignored_extensions, very_verbose=very_verbose, folders_verbose=args.folders_verbose)
                 print("")
                 elapsed_time = time.time() - start_time
                 formatted_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
