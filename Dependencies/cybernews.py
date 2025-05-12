@@ -40,7 +40,7 @@ def cybernews(email):
         print(f"{Fore.GREEN}[+] {Fore.YELLOW}Total : {Fore.GREEN}{total}")
         for leak in result["dataLeakEmails"]:
             print(f" {Fore.YELLOW}--> {Fore.GREEN}{leak['name']})")
-    elif "error" in result:
+    elif result is not None and "error" in result:
         pass
     else:
         pass
