@@ -2,6 +2,7 @@
 import os, re, argparse, json, requests, urllib3, sys, time, whois, pdfplumber, subprocess, logging, fitz
 from pathlib import Path
 from tqdm import tqdm
+from wappalyzer import analyze
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 # dependencies
@@ -673,6 +674,7 @@ def main():
         parser.add_argument("-u", "--update", action="store_true", help="get updates")
         parser.add_argument('--ip',  help='search infos through ip, domain, ... (iknowwhatyoudownload, whois, leakix, ...)')
         parser.add_argument('--subdomain',  help='search subdomain of a spoecific host (leakix request)')
+        parser.add_argument('--version',  help='search webapp technologies with wappalyzer module')
         parser.add_argument('--comb',  help='search through the COMB leak via an API (proxynova)')
         parser.add_argument('--skype',  help='search through skype (skypesearch)')
         parser.add_argument('--email',  help='search emails match (holehe)')
@@ -1023,6 +1025,40 @@ def main():
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}[!] KeyboardInterrupt...\n{Fore.YELLOW}[!] End of search")
                 sys.exit(0)
+            
+        if args.version:
+            print(f"\n{Fore.YELLOW}[!] Wappalyzer search")
+            if not args.version.startswith(('http://', 'https://')):
+                args.version = 'https://' + args.version
+            
+            results = analyze(
+                url=args.version,
+                scan_type='full',  # 'fast', 'balanced', or 'full'
+                threads=3
+            )
+            for url, techs in results.items():
+                if not techs:
+                    print(f"{Fore.MAGENTA}[-] No technologies found")
+                    continue
+                   
+                for tech_name, details in techs.items():
+                    version = details.get("version", "")
+                    confidence = details.get("confidence", 0)
+                    categories = details.get("categories", [])
+                    groups = details.get("groups", [])
+
+                    if version and version != "":
+                        version_display = f"{Fore.RED}{version}"
+                    else:
+                        version_display = f"{Fore.GREEN}/"
+
+                    print(f"{Fore.GREEN}[+] {Fore.YELLOW}Technology : {Fore.GREEN}{tech_name}")
+                    print(f"    {Fore.YELLOW}Version    : {version_display}")
+                    print(f"    {Fore.YELLOW}Confidence : {Fore.GREEN}{confidence}%")
+                    print(f"    {Fore.YELLOW}Categories : {Fore.GREEN}{', '.join(categories) if categories else 'none'}")
+                    print(f"    {Fore.YELLOW}Groups     : {Fore.GREEN}{', '.join(groups) if groups else 'none'}")
+                    print("")          
+            
             
         search_term, cve, port = None, None, None
         if args.exploit is not None:
