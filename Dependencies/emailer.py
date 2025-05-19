@@ -1297,6 +1297,69 @@ def hypnotube(email):
         print(f"{R}[x] hypnotube.com")
 
 
+def zapier(email):
+    session = requests.Session()
+    common_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "Accept-Language": "fr-FR,fr;q=0.9",
+        "Referer": "https://zapier.com/app/login",
+        "Origin": "https://zapier.com",
+        "Accept": "*/*"
+    }
+    session.get("https://zapier.com/app/login", headers=common_headers)
+    csrf_response = session.get("https://zapier.com/api/v3/csrf", headers=common_headers)
+
+    csrf_token = session.cookies.get('csrftoken')
+    if not csrf_token:
+        print(f"{R}[x] zapier.com")
+        return
+
+    login_headers = {
+        **common_headers,
+        "Content-Type": "application/json;charset=utf-8",
+        "Accept": "application/json",
+        "X-Csrftoken": csrf_token,
+        "X-Requested-With": "XMLHttpRequest"
+    }
+    
+    login_payload = {
+        "email": email
+    }
+    
+    login_response = session.post(
+        "https://zapier.com/api/v3/login",
+        headers=login_headers,
+        json=login_payload
+    )
+
+    if login_response.status_code == 401:
+        try:
+            data = login_response.json()
+            if "errors" in data:
+                message_done = False
+                for error in data["errors"]:
+                    for field in error.get("fields", []):
+                        key = field.get("key")
+                        message = field.get("message").lower()
+
+                        if key == "email" and "doesn" in message and "exist" in message:
+                            print(f"{M}[-] zapier.com")
+                            message_done = True
+                        elif key == "password" and "incorrect" in message:
+                            print(f"{G}[+] zapier.com")
+                            message_done = True
+
+                if not message_done:
+                    print(f"{R}[x] zapier.com")
+            else:
+                print(f"{G}[+] zapier.com")
+        except ValueError:
+            print(f"{R}[x] zapier.com")
+    else:
+        print(f"{R}[x] zapier.com")
+
+
+
 ############################## PHONE ##############################
 
 def apple1(phone):
@@ -1981,7 +2044,7 @@ def darkforums(username):
                 print(f"{C} ├─ {G}UID : {user['uid']}, Username : {user['id']}")
         else:
             print(f"{M}[-] darkforums.st")
-    except requests.exceptions.JSONDecodeError:
+    except ValueError:
         print(f"{R}[x] darkforums.st")
 
 
@@ -2015,7 +2078,7 @@ def cracked(username):
                 print(f"{C} ├─ {G}UID : {user['uid']}, Username : {user['id']}")
         else:
             print(f"{M}[-] cracked.sh")
-    except requests.exceptions.JSONDecodeError:
+    except ValueError:
         print(f"{R}[x] cracked.sh")
 
 
@@ -2465,6 +2528,7 @@ def init_search(target, what):
         espritlib(target)
         vivaflirt(target)
         hypnotube(target)
+        zapier(target)
         
     elif what == "phone":
         apple1(target)
@@ -2494,3 +2558,5 @@ def init_search(target, what):
         hypnotube1(target)
         stripchat(target)
         duolingo1(target)
+
+
