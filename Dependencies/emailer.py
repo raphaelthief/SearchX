@@ -906,7 +906,10 @@ def lespompeurs(email):
         result = response.json()
 
         if "error" in result.get("results", {}):
-            print(f"{G}[+] lespompeurs.com")
+            if "adresse n'est pas utilisable" in result.get("results", {}).get("error_message"):
+                print(f"{M}[-] lespompeurs.com")
+            else:
+                print(f"{G}[+] lespompeurs.com")
         elif result.get("results", {}).get("complete") == "1":
             print(f"{M}[-] lespompeurs.com")
         else:
@@ -2558,5 +2561,3 @@ def init_search(target, what):
         hypnotube1(target)
         stripchat(target)
         duolingo1(target)
-
-
