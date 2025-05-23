@@ -22,7 +22,7 @@ KEYWORDS = [
     'apiaccess', 'internal-api', 'sandbox', 'devops', 'ci-cd', 
     'gitlab', 'jenkins', 'deployment', 'webhooks', 'cron', 
     'backup', 'vpn', 'token', 'oauth', 'sso', 'loginportal',
-    '2fa', 'mfa', 'security', 'credentials', 'reset',
+    '2fa', 'mfa', 'security', 'credentials', 'reset', 'radius',
     'key', 'apikey', 'session', 'jwt', 'signin', 'recovery',
     'logout', 'change-password', 'unlock', 'identity', 'idp',
     'authenticator', 'authorization', 'authserver', 'auth-api'    
@@ -66,20 +66,20 @@ def subreponse(domain, api_key):
                 response = requests.get("https://www.virustotal.com/vtapi/v2/domain/report", params=params)
                 jdata = response.json()
                 domains = sorted(jdata['subdomains'])
+
+                for domainz in domains:
+
+                    #print(f"{Fore.GREEN}[+] {Fore.CYAN}{domainz}")
+                    highlighted = highlight_keywords(domainz, KEYWORDS)
+                    print(f"{Fore.GREEN}[+] {Fore.CYAN}{highlighted}")
+                print("")
             except(KeyError):
                 print(f"{Fore.MAGENTA}[!] {Fore.GREEN}No subdomains found for {Fore.YELLOW}{domain}\n")
                 pass
             except(requests.ConnectionError):
                 print(f"{Fore.RED}[!] Rate limit error")
                 pass
-
-            for domainz in domains:
-
-                #print(f"{Fore.GREEN}[+] {Fore.CYAN}{domainz}")
-                highlighted = highlight_keywords(domainz, KEYWORDS)
-                print(f"{Fore.GREEN}[+] {Fore.CYAN}{highlighted}")
-            print("")
-    
+                
     print(f"{Fore.YELLOW}[!] Source : https://crt.sh/")
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
@@ -93,7 +93,7 @@ def subreponse(domain, api_key):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"{M}[Error] {R}Request error to {url} : {e}")
+        print(f"{Fore.MAGANTA}[Error] {Fore.RED}Request error to {url} : {e}")
         return
 
     soup = BeautifulSoup(response.text, 'html.parser')
@@ -103,7 +103,7 @@ def subreponse(domain, api_key):
         table = soup.find_all('table')[1] 
         rows = table.find_all('tr')[1:]  
     except IndexError:
-        print(f"{M}[Error] {R}No valid data found on {url}")
+        print(f"{Fore.MAGANTA}[Error] {Fore.RED}No valid data found on {url}")
         return    
 
     certificates = {}
