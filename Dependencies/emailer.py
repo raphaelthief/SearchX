@@ -2490,7 +2490,22 @@ def duolingo1(username):
     else:
         print(f"{R}[x] duolingo.com")
 
+def medium(username):
+    url = f"https://medium.com/@{username}"
+    try:
+        response = requests.get(url)
+        response_text = response.text
 
+        if (
+            "PAGE NOT FOUND" in response_text and
+            "404" in response_text and
+            "Out of nothing, something." in response_text
+        ):
+            print(f"{M}[-] medium.com")
+        else:
+            print(f"{G}[+] medium.com")
+    except requests.RequestException as e:
+        print(f"{R}[x] medium.com")
 
 
 
@@ -2561,3 +2576,4 @@ def init_search(target, what):
         hypnotube1(target)
         stripchat(target)
         duolingo1(target)
+        medium(target)
