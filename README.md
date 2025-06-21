@@ -33,25 +33,31 @@ Performance test on a folder containing 147 GB of files and subfolders (15 428 f
 
 ## Key Features :
 
-### Search Capabilities :
-- Directory and file search with keyword matching (-k), regex patterns (-x), and strict keyword matching (-kx).
-- Supports verbose (-v) and very verbose (-vv) output modes for detailed context.
+### General Search Capabilities :
+- Keyword search: Locate data using keywords (-k), strict match (-kx), or regex patterns (-x).
+- File & directory search: Recursive scanning of directories (-r) or single files (-rf).
+- Verbosity control: Show lines containing matches (-v) or full context (-vv).
+- Filter options: Ignore common file types (-i) or exclude specific extensions (-e).
+- Exclude specific file types (-e) or ignore default extensions like .jpg, .zip (-i).
+- Focus searches on directories (-d) or files only (-f).
+- Folder-only display: List only matching folders (-d, -dv).
+- File-only mode: Show only matching files (-f).
+- Multithreading: Boost performance with threaded searches (-t).
 
 ### Specialized Search Functions :
 - Email analysis : Using tools like Holehe, GitFive and Ghunt to search email-related data.
 - Username lookup : Integrates with Blackbird and GitHub tools.
+- Custom Email & Username search that is not covered by other tools.
 - IP analysis : Provides information through APIs such as Shodan and VirusTotal.
 - Password breach checks : Verifies passwords against breached databases.
+- Check default passwords.
+- Wayback machine tweeter.
 - Exploit and CVE search : Retrieves vulnerabilities from exploit-db and CVE databases.
 - Phone number lookup : Uses APIs and phone number information libraries.
 
-### Filters :
-- Exclude specific file types (-e) or ignore default extensions like .jpg, .zip (-i).
-- Focus searches on directories (-d) or files only (-f).
-
 ### Advanced Utilities :
 - Integration with Google Dorking (--dorks) for enhanced search capabilities.
-- Subdomain enumeration using LeakIX and WhatWeb, ...
+- Subdomain enumeration using LeakIX, WhatWeb, virustotal, crt.sh, ...
 - Search through the COMB (Compilation of Many Breaches) database.
 - Logging output to a file (-o) with ANSI color removal for easier reading.
 
