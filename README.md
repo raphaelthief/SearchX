@@ -74,7 +74,7 @@ Performance test on a folder containing 147 GB of files and subfolders (15 428 f
 
 ## Help menu : 
 
-![Help menu](https://github.com/raphaelthief/SearchX/blob/main/Pictures/Help1.JPG "Help menu")
+![Help menu](https://github.com/raphaelthief/SearchX/blob/main/Pictures/Help1.PNG "Help menu")
 
 ## Usages menu : 
 
