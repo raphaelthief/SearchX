@@ -11,10 +11,6 @@ urllib3
 trio
 prettytable
 datetime
-plistlib
-warnings
-os
-mimetypes
 PyPDF2
 python-docx
 Pillow
@@ -23,10 +19,7 @@ pymediainfo
 PyMuPDF
 openpyxl
 pefile
-json
-xml
 pykeepass
-patoolib
 xlrd
 rarfile
 python-whois
@@ -38,5 +31,6 @@ cloudscraper
 pymupdf
 ignorant
 pdfplumber
-brotli httpx[http2]
+brotli 
+httpx[http2]
 wappalyzer
