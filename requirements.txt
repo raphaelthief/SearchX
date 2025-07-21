@@ -34,3 +34,4 @@ pdfplumber
 brotli 
 httpx[http2]
 wappalyzer
+playwright
