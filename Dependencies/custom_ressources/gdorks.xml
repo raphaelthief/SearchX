@@ -14,11 +14,18 @@
   <query>"search_query" (site:breachforums.st OR site:cracking.org OR site:nulled.io OR site:cracked.io OR site:patched.to OR site:crackingx.com OR site:darknetarmy.com OR site:leakbase.io)</query>
   <querystring>https://www.google.com/search?q=%22deezer%22%20(site:breachforums.st%20OR%20site:cracking.org%20OR%20site:nulled.io%20OR%20site:cracked.io%20OR%20site:patched.to%20OR%20site:crackingx.com%20OR%20site:darknetarmy.com%20OR%20site:leakbase.io)</querystring>
  </entry>
-  <entry>
+ <entry>
   <id>3</id>
   <category>Leak</category>
   <shortDescription>Leaks forums and db</shortDescription>
   <query>breachforums.st | cracking.org | nulled.io | cracked.io | patched.to | crackingx. | darknetarmy.com | leakbase.io | btdig.com | sizeof.cat/post/data-leaks/ | data.ddosecrets.com</query>
   <querystring>None</querystring>
+ </entry>
+ <entry>
+  <id>4</id>
+  <category>Leak</category>
+  <shortDescription>Leaks google groups configs</shortDescription>
+  <query>site:googlegroups.com filetype:log token</query>
+  <querystring>https://www.google.com/search?q=site:googlegroups.com%20filetype:log%20token</querystring>
  </entry>
 </gdorks>
