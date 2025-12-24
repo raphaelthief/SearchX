@@ -42,8 +42,8 @@ from Dependencies.lydia import proceed
 from Dependencies.emailer import init_search
 from Dependencies.breachvip import breachvip_init
 from Dependencies.cybernews import init_cybernews
+from Dependencies.whatismyIP import whatismyipAPI_DB
 from Dependencies.annuaire import annuaire_search
-
 
 # colorama
 from colorama import init, Fore, Style
@@ -839,6 +839,7 @@ def main():
                 
                 leackcheck(args.email)
                 init_cybernews(args.email, "email")
+                whatismyipAPI_DB(args.email)
                 
                 scam(args.email)
 
@@ -1193,3 +1194,4 @@ def main():
         
 if __name__ == "__main__":
     main()
+
