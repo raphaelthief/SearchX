@@ -1,4 +1,4 @@
-# Of course, you're not going to use this tool to sift through ransomware leaks or any other crap. Don't be stupid and respect the law !
+# Of course, you're not going to use this tool to sift through ransomware leaks or any other crap. Don't be stupid and respect the law! (you're not allowed to do Palentir stuff)
 import os, re, argparse, json, requests, urllib3, sys, time, whois, pdfplumber, subprocess, logging, fitz
 from pathlib import Path
 from tqdm import tqdm
@@ -109,7 +109,6 @@ def initialize_progress_bar(total):
 def update_progress(pbar):
     if pbar:
         pbar.update(1)
-
 
 
 class TeeOutput:
@@ -670,43 +669,43 @@ def main():
         clear_screen()
         print(banner)
         parser = argparse.ArgumentParser(description=f"{Fore.GREEN}Search{Fore.RED}X{Fore.GREEN} - {Fore.BLUE}Advenced data finder{Fore.GREEN}")
-        parser.add_argument("-usage", "--usage", action="store_true", help="Get usages exemple")
-        parser.add_argument("-u", "--update", action="store_true", help="get updates")
-        parser.add_argument('--ip',  help='search infos through ip, domain, ... (iknowwhatyoudownload, whois, leakix, ...)')
-        parser.add_argument('--subdomain',  help='search subdomain of a spoecific host (leakix request)')
-        parser.add_argument('--version',  help='search webapp technologies with wappalyzer module')
-        parser.add_argument('--comb',  help='search through the COMB leak via an API (proxynova)')
-        parser.add_argument('--skype',  help='search through skype (skypesearch)')
-        parser.add_argument('--email',  help='search emails match (holehe)')
-        parser.add_argument('--phone',  help='search phone match')
-        parser.add_argument('--username',  help='search username (blackbird)')
-        parser.add_argument('--name',  help='search first and last name (--lastname needed)')
-        parser.add_argument('--lastname',  help='search first and last name (--name needed)')
-        parser.add_argument('--where',  help='search first and last name with location (--name & --lastname needed)')
-        parser.add_argument('--exploit', nargs='*', help='Search for vulnerabilities (--exploit "description" "CVE-ID" "port_number" : --exploit "eternalblue" OR --exploit "eternalblue" "" "445")')
-        parser.add_argument('--dorks',  help='Search for Google Dorks (--dorks "index off")')
-        parser.add_argument('--cve', nargs='*', help='Search for cve (--cve "search query" "CVE-ID")')
-        parser.add_argument('-p', '--password',  help='check how many times this password has been leaked (breachdirectory)')
-        parser.add_argument("--tweet", help="Find tweets, posts, etc... by usernames even if the profile was deleted (wayback urls)")
-        parser.add_argument("-ef", "--emailfinder", help="Find valid email with firstname lastname & domain (ex : 'john doe gmail.com')")
-        parser.add_argument("-def", "--defaultpassword", help="Find default devices passwords")
-        parser.add_argument("-meta", "--metadatas", help=r"Search for metadas on DS_Store, pdf, docx, etc .... (ex : --metadatas 'E:\something\some folder\.DS_store'")
-        parser.add_argument("-dh", "--drivehunt", help=r"Search for metadas on Google Drive document with xeuledoc(ex : -dh https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms)")
-        parser.add_argument("--crawl", help="Search for stored infos (emails and phone numbers) in a webpage")
-        parser.add_argument("-r", "--root", help="Root directory path to explore")#, required=True) # aesthetic bug fix
-        parser.add_argument("-rf", "--rootfile", help="Specific file to explore (only one file)")#, required=True) # aesthetic bug fix
-        parser.add_argument("-k", "--keywords", help="Keywords to search for in file names (separated by commas)")
-        parser.add_argument("-x", "--regex", help=r"Regular expression to search for in file names. Example for a keyword followed by 3 digits: abc\d{3})")
-        parser.add_argument("-kx", "--strict", help="Search for an exact keyword, ensuring it is preceded by specific characters (':', ' ', ',' or start of the line), ensuring no partial matches")
-        parser.add_argument("-d", "--folders-only", action="store_true", help="Display only folders")
-        parser.add_argument("-dv", "--folders-verbose", action="store_true", help="Display fullpath folders")
-        parser.add_argument("-f", "--files-only", action="store_true", help="Display only matched files ")
-        parser.add_argument("-v", "--verbose", action="store_true", help="Display lines where keywords are found")
-        parser.add_argument("-vv", "--very-verbose", action="store_true", help="Display all the text where keywords are found in line")
-        parser.add_argument("-o", "--output", help="Save the results to a specified text file")
-        parser.add_argument('-e', '--exclude', metavar='', type=str, help='Extensions to ignore separated by commas', default='')
-        parser.add_argument('-i', '--ignore', action="store_true", help='ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin')
-        parser.add_argument("-t", "--threads", type=int, help="Multi threading. Works automatically with the -f argument. You need to provide -k argument(s). Optionals args allowed : -v -vv -i -e | Fast mode works only with -v -vv -k -i -e")
+        parser.add_argument("-usage", "--usage", action="store_true", help=f"{Fore.YELLOW}Get usages exemple{Fore.GREEN}")
+        parser.add_argument("-u", "--update", action="store_true", help=f"{Fore.YELLOW}get updates{Fore.GREEN}")
+        parser.add_argument('--ip',  help=f'{Fore.YELLOW}search infos through ip, domain, ... (iknowwhatyoudownload, whois, leakix, ...){Fore.GREEN}')
+        parser.add_argument('--subdomain',  help=f'{Fore.YELLOW}search subdomain of a spoecific host (leakix request){Fore.GREEN}')
+        parser.add_argument('--version',  help=f'{Fore.YELLOW}search webapp technologies with wappalyzer module{Fore.GREEN}')
+        parser.add_argument('--comb',  help=f'{Fore.YELLOW}search through the COMB leak via an API (proxynova){Fore.GREEN}')
+        parser.add_argument('--skype',  help=f'{Fore.YELLOW}search through skype (skypesearch) {Fore.RED}[Deprecated]{Fore.GREEN}{Fore.GREEN}')
+        parser.add_argument('--email',  help=f'{Fore.YELLOW}search emails match (holehe){Fore.GREEN}')
+        parser.add_argument('--phone',  help=f'{Fore.YELLOW}earch phone match{Fore.GREEN}')
+        parser.add_argument('--username',  help=f'{Fore.YELLOW}search username (blackbird){Fore.GREEN}')
+        parser.add_argument('--name',  help=f'{Fore.YELLOW}search first and last name (--lastname needed){Fore.GREEN}')
+        parser.add_argument('--lastname',  help=f'{Fore.YELLOW}search first and last name (--name needed){Fore.GREEN}')
+        parser.add_argument('--where',  help=f'{Fore.YELLOW}search first and last name with location (--name & --lastname needed){Fore.GREEN}')
+        parser.add_argument('--exploit', nargs='*', help=f'{Fore.YELLOW}Search for vulnerabilities (--exploit "description" "CVE-ID" "port_number" : --exploit "eternalblue" OR --exploit "eternalblue" "" "445"){Fore.GREEN}')
+        parser.add_argument('--dorks',  help=f'{Fore.YELLOW}earch for Google Dorks (--dorks "index off"){Fore.GREEN}')
+        parser.add_argument('--cve', nargs='*', help=f'{Fore.YELLOW}Search for cve (--cve "search query" "CVE-ID"){Fore.GREEN}')
+        parser.add_argument('-p', '--password',  help=f'{Fore.YELLOW}check how many times this password has been leaked (breachdirectory){Fore.GREEN}')
+        parser.add_argument("--tweet", help=f"{Fore.YELLOW}Find tweets, posts, etc... by usernames even if the profile was deleted (wayback urls){Fore.GREEN}")
+        parser.add_argument("-ef", "--emailfinder", help=f"{Fore.YELLOW}Find valid email with firstname lastname & domain (ex : 'john doe gmail.com'){Fore.GREEN}")
+        parser.add_argument("-def", "--defaultpassword", help=f"{Fore.YELLOW}Find default devices passwords{Fore.GREEN}")
+        parser.add_argument("-meta", "--metadatas", help=rf"{Fore.YELLOW}Search for metadas on DS_Store, pdf, docx, etc .... (ex : --metadatas 'E:\something\some folder\.DS_store'{Fore.GREEN}")
+        parser.add_argument("-dh", "--drivehunt", help=rf"{Fore.YELLOW}Search for metadas on Google Drive document with xeuledoc(ex : -dh https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms){Fore.GREEN}")
+        parser.add_argument("--crawl", help=f"{Fore.YELLOW}Search for stored infos (emails and phone numbers) in a webpage{Fore.GREEN}")
+        parser.add_argument("-r", "--root", help=f"{Fore.YELLOW}Root directory path to explore{Fore.GREEN}") #, required=True) # aesthetic bug fix
+        parser.add_argument("-rf", "--rootfile", help=f"{Fore.YELLOW}Specific file to explore (only one file){Fore.GREEN}") #, required=True) # aesthetic bug fix
+        parser.add_argument("-k", "--keywords", help=f"{Fore.YELLOW}Keywords to search for in file names (separated by commas){Fore.GREEN}")
+        parser.add_argument("-x", "--regex", help=rf"{Fore.YELLOW}Regular expression to search for in file names. Example for a keyword followed by 3 digits: abc\d{3}){Fore.GREEN}")
+        parser.add_argument("-kx", "--strict", help=f"{Fore.YELLOW}Search for an exact keyword, ensuring it is preceded by specific characters (':', ' ', ',' or start of the line), ensuring no partial matches{Fore.GREEN}")
+        parser.add_argument("-d", "--folders-only", action="store_true", help=f"{Fore.YELLOW}Display only folders{Fore.GREEN}")
+        parser.add_argument("-dv", "--folders-verbose", action="store_true", help=f"{Fore.YELLOW}Display fullpath folders{Fore.GREEN}")
+        parser.add_argument("-f", "--files-only", action="store_true", help=f"{Fore.YELLOW}Display only matched files {Fore.GREEN}")
+        parser.add_argument("-v", "--verbose", action="store_true", help=f"{Fore.YELLOW}Display lines where keywords are found{Fore.GREEN}")
+        parser.add_argument("-vv", "--very-verbose", action="store_true", help=f"{Fore.YELLOW}Display all the text where keywords are found in line{Fore.GREEN}")
+        parser.add_argument("-o", "--output", help=f"{Fore.YELLOW}Save the results to a specified text file{Fore.GREEN}")
+        parser.add_argument('-e', '--exclude', metavar='', type=str, help=f'{Fore.YELLOW}Extensions to ignore separated by commas{Fore.GREEN}', default='')
+        parser.add_argument('-i', '--ignore', action="store_true", help=f'{Fore.YELLOW}ignore the following default extensions: .jpg, .png, .exe, .zip, .rar, .iso, .jpeg, .7z, .msi, .cap, .bin{Fore.GREEN}')
+        parser.add_argument("-t", "--threads", type=int, help=f"{Fore.YELLOW}Multi threading. Works automatically with the -f argument. You need to provide -k argument(s). Optionals args allowed : -v -vv -i -e | Fast mode works only with -v -vv -k -i -e{Fore.GREEN}")
 
         
         args = parser.parse_args()
@@ -865,6 +864,7 @@ def main():
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://dehashed.com/")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://vxintelligence.com/")
                 print(f"{Fore.YELLOW}--> {Fore.GREEN}https://leakpeek.com/")
+                print(f"{Fore.YELLOW}--> {Fore.GREEN}https://www.whatismyip.com/data-breach/")
                 
             
             except KeyboardInterrupt:
@@ -1194,4 +1194,3 @@ def main():
         
 if __name__ == "__main__":
     main()
-
