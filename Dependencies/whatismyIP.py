@@ -60,42 +60,28 @@ def whatismyipAPI_DB(email):
     elif isinstance(breaches, str):
         print(Fore.CYAN + f"ℹ️ API Response: {breaches}")
         return
+    elif not isinstance(breaches, list):
+        print(Fore.YELLOW + "⚠️ Unexpected API response format")
+        return
+    
 
-    print(
-        Fore.CYAN
-        + Style.BRIGHT
-        + f"\n🔐 Data breaches found : {len(breaches)}"
-    )
-
+    print(Fore.CYAN + Style.BRIGHT + f"\n🔐 Data breaches found : {len(breaches)}")
     for i, b in enumerate(breaches, 1):
+        title = b.get("Title") or "N/A"
+        breach_date = format_date(b.get("BreachDate"))
+        domain = b.get("Domain") or "—"
+        pwn_count = b.get("PwnCount")
+        pwn_display = f"{pwn_count:,}" if isinstance(pwn_count, int) else "—"
+        verified = "Yes" if b.get("IsVerified") else "No"
+        data_classes = ", ".join(b.get("DataClasses") or [])
+
         print(Fore.BLUE + "=" * 70)
-        print(
-            Style.BRIGHT
-            + Fore.WHITE
-            + f"[{i}] {b.get('Title', 'N/A')}"
-        )
+        print(Style.BRIGHT + Fore.WHITE + f"[{i}] {title}")
         print(Fore.BLUE + "-" * 70)
-
-        print(
-            Fore.GREEN
-            + f"📅 Breach date      : {format_date(b.get('BreachDate'))}"
-        )
-        print(
-            Fore.GREEN
-            + f"🌐 Domain           : {b.get('Domain') or '—'}"
-        )
-        print(
-            Fore.GREEN
-            + f"👥 Accounts exposed : {b.get('PwnCount'):,}"
-        )
-        print(
-            Fore.GREEN
-            + f"✔  Verified         : {'Yes' if b.get('IsVerified') else 'No'}"
-        )
-
-        data_classes = ", ".join(b.get("DataClasses", []))
-        print(
-            Fore.MAGENTA
-            + f"📦 Exposed data     : {data_classes}"
-        )
+        print(Fore.GREEN + f"📅 Breach date      : {breach_date}")
+        print(Fore.GREEN + f"🌐 Domain           : {domain}")
+        print(Fore.GREEN + f"👥 Accounts exposed : {pwn_display}")
+        print(Fore.GREEN + f"✔  Verified         : {verified}")
+        print(Fore.MAGENTA + f"📦 Exposed data     : {data_classes}")
+    
     print(Fore.BLUE + "=" * 70 + "\n")
