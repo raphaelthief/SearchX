@@ -14,19 +14,28 @@ init() # Init colorama
 def formatTable(table):
     text = ''
     rows = table.find_all('tr')
-    text += f'{Fore.RED}%s\n' % rows[0].text # Modif here (more beautiful form me)
+    if not rows:
+        return text
 
+    text += f'{Fore.RED}{rows[0].text.strip()}\n'
     for row in rows[1:]:
         data = row.find_all('td')
-        text += f'{Fore.GREEN}%s : {Fore.CYAN}%s\n' % (data[0].text, data[1].text) # Modif here (more beautiful form me)
-        
+
+        if len(data) >= 2:   # <-- Fix
+            key = data[0].text.strip()
+            value = data[1].text.strip()
+            text += f'{Fore.GREEN}{key} : {Fore.CYAN}{value}\n'
     return text
 
 def defaultpass(vendor):
     urlenc = urllib.parse.quote(vendor)
     url = "https://cirt.net/passwords?vendor=" + urlenc
-    request = urllib.request.Request(url)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+    }
+    request = urllib.request.Request(url, headers=headers)
     response = urllib.request.urlopen(request)
+
     soup = bs.BeautifulSoup(response, "html.parser")
     
     tables = soup.find_all('table')
