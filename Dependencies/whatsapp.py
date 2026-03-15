@@ -24,21 +24,26 @@ def getwhatsappinfos(phone):
         response_json = json.loads(data.decode("utf-8"))
         
         print(f"\n{Fore.YELLOW}[!] Whatsapp infos")
-        print(f"{Fore.YELLOW}Phone Number        : {Fore.GREEN}{response_json['phone']}")
-        print(f"{Fore.YELLOW}Country Code        : {Fore.GREEN}{response_json['countryCode']}")
-        print(f"{Fore.YELLOW}User ID             : {Fore.GREEN}{response_json['id']['user']}")
-        print(f"{Fore.YELLOW}User Serialized     : {Fore.GREEN}{response_json['id']['_serialized']}")
-        print(f"{Fore.YELLOW}Server              : {Fore.GREEN}{response_json['id']['server']}")
-        print(f"{Fore.YELLOW}Is Business Account : {Fore.GREEN}{'Yes' if response_json['isBusiness'] else 'No'}")
-        print(f"{Fore.YELLOW}Labels              : {Fore.GREEN}{response_json['labels'] if response_json['labels'] else 'No labels'}")
-        print(f"{Fore.YELLOW}Is Me               : {Fore.GREEN}{'Yes' if response_json['isMe'] else 'No'}")
-        print(f"{Fore.YELLOW}Is User             : {Fore.GREEN}{'Yes' if response_json['isUser'] else 'No'}")
-        print(f"{Fore.YELLOW}Is Group            : {Fore.GREEN}{'Yes' if response_json['isGroup'] else 'No'}")
-        print(f"{Fore.YELLOW}Is WA Contact       : {Fore.GREEN}{'Yes' if response_json['isWAContact'] else 'No'}")
-        print(f"{Fore.YELLOW}Is My Contact       : {Fore.GREEN}{'Yes' if response_json['isMyContact'] else 'No'}")
-        print(f"{Fore.YELLOW}Is Blocked          : {Fore.GREEN}{'Yes' if response_json['isBlocked'] else 'No'}")
-        print(f"{Fore.YELLOW}About               : {Fore.GREEN}{response_json['about']}")
-        print(f"{Fore.YELLOW}Profile Picture     : {Fore.GREEN}{response_json['profilePic']}")
+        print(f"{Fore.YELLOW}Phone Number        : {Fore.GREEN}{response_json.get('phone')}")
+        print(f"{Fore.YELLOW}Country Code        : {Fore.GREEN}{response_json.get('countryCode')}")
+
+        id_data = response_json.get("id", {})
+
+        print(f"{Fore.YELLOW}User ID             : {Fore.GREEN}{id_data.get('user')}")
+        print(f"{Fore.YELLOW}User Serialized     : {Fore.GREEN}{id_data.get('_serialized')}")
+        print(f"{Fore.YELLOW}Server              : {Fore.GREEN}{id_data.get('server')}")
+
+        print(f"{Fore.YELLOW}Is Business Account : {Fore.GREEN}{'Yes' if response_json.get('isBusiness') else 'No'}")
+        print(f"{Fore.YELLOW}Labels              : {Fore.GREEN}{response_json.get('labels', 'No labels')}")
+        print(f"{Fore.YELLOW}Is Me               : {Fore.GREEN}{'Yes' if response_json.get('isMe') else 'No'}")
+        print(f"{Fore.YELLOW}Is User             : {Fore.GREEN}{'Yes' if response_json.get('isUser') else 'No'}")
+        print(f"{Fore.YELLOW}Is Group            : {Fore.GREEN}{'Yes' if response_json.get('isGroup') else 'No'}")
+        print(f"{Fore.YELLOW}Is WA Contact       : {Fore.GREEN}{'Yes' if response_json.get('isWAContact') else 'No'}")
+        print(f"{Fore.YELLOW}Is My Contact       : {Fore.GREEN}{'Yes' if response_json.get('isMyContact') else 'No'}")
+        print(f"{Fore.YELLOW}Is Blocked          : {Fore.GREEN}{'Yes' if response_json.get('isBlocked') else 'No'}")
+
+        print(f"{Fore.YELLOW}About               : {Fore.GREEN}{response_json.get('about', 'No bio')}")
+        print(f"{Fore.YELLOW}Profile Picture     : {Fore.GREEN}{response_json.get('profilePic', 'No picture')}")
         
     except FileNotFoundError:
         abs_path = os.path.abspath(token_file_path)
@@ -46,5 +51,6 @@ def getwhatsappinfos(phone):
         print(f"{Fore.YELLOW}Searched in: {abs_path}{Fore.RED}")
         
     except Exception as e:
-        print(f"\n{Fore.RED}[!] Error : {e}{Fore.YELLOW}")
+        print(f"\n{Fore.RED}[!] Error : {e}{Fore.YELLOW}\n")
+        print(json.dumps(response_json, indent=2))
 
