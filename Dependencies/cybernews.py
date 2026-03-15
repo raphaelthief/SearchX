@@ -1,6 +1,7 @@
 import time, json, requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
 
 # colorama
 from colorama import init, Fore, Style
@@ -69,7 +70,16 @@ def cybernews1(phone):
     driver.execute_script(script)
 
     time.sleep(2)
-    result = driver.execute_script("return window.result;")
+    
+    try:
+        result = WebDriverWait(driver, 10).until(
+            lambda d: d.execute_script("return window.result")
+        )
+    except:
+        result = None
+    
+    
+    #result = driver.execute_script("return window.result;")
     driver.quit()
 
     if result and "dataLeakPhones" in result:
@@ -79,7 +89,8 @@ def cybernews1(phone):
         print(f"{Fore.GREEN}[+] {Fore.YELLOW}Total : {Fore.GREEN}{total}")
         for leak in result["dataLeakPhones"]:
             print(f" {Fore.YELLOW}--> {Fore.GREEN}{leak['name']})")
-    elif "error" in result:
+    #elif "error" in result:
+    elif result and "error" in result:
         pass
     else:
         pass
