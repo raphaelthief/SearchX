@@ -44,7 +44,7 @@ from Dependencies.breachvip import breachvip_init
 from Dependencies.cybernews import init_cybernews
 from Dependencies.whatismyIP import whatismyipAPI_DB
 from Dependencies.annuaire import annuaire_search
-from Dependencies.magret import run_maigret
+from Dependencies.maigret import run_maigret
 
 # colorama
 from colorama import init, Fore, Style
@@ -879,7 +879,7 @@ def main():
                 print(f"[!] Checking dependencies ...")
                 blackbirdhunt(args.username, "username")
                 
-                print(f"\n{Fore.YELLOW}----- Launching magret : {Fore.GREEN}https://github.com/soxoj/maigret{Fore.YELLOW} -----")
+                print(f"\n{Fore.YELLOW}----- Launching maigret : {Fore.GREEN}https://github.com/soxoj/maigret{Fore.YELLOW} -----")
                 run_maigret(args.username)
 
                 print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
