@@ -44,6 +44,7 @@ from Dependencies.breachvip import breachvip_init
 from Dependencies.cybernews import init_cybernews
 from Dependencies.whatismyIP import whatismyipAPI_DB
 from Dependencies.annuaire import annuaire_search
+from Dependencies.magret import run_maigret
 
 # colorama
 from colorama import init, Fore, Style
@@ -678,7 +679,7 @@ def main():
         parser.add_argument('--skype',  help=f'{Fore.YELLOW}search through skype (skypesearch) {Fore.RED}[Deprecated]{Fore.GREEN}{Fore.GREEN}')
         parser.add_argument('--email',  help=f'{Fore.YELLOW}search emails match (holehe){Fore.GREEN}')
         parser.add_argument('--phone',  help=f'{Fore.YELLOW}earch phone match{Fore.GREEN}')
-        parser.add_argument('--username',  help=f'{Fore.YELLOW}search username (blackbird){Fore.GREEN}')
+        parser.add_argument('--username',  help=f'{Fore.YELLOW}search username (blackbird, magret, ...){Fore.GREEN}')
         parser.add_argument('--name',  help=f'{Fore.YELLOW}search first and last name (--lastname needed){Fore.GREEN}')
         parser.add_argument('--lastname',  help=f'{Fore.YELLOW}search first and last name (--name needed){Fore.GREEN}')
         parser.add_argument('--where',  help=f'{Fore.YELLOW}search first and last name with location (--name & --lastname needed){Fore.GREEN}')
@@ -877,11 +878,16 @@ def main():
                 print(f"{Fore.YELLOW}----- Launching blackbird : {Fore.GREEN}https://github.com/p1ngul1n0/blackbird{Fore.YELLOW} -----")
                 print(f"[!] Checking dependencies ...")
                 blackbirdhunt(args.username, "username")
-                githubusername(args.username)
+                
+                print(f"\n{Fore.YELLOW}----- Launching magret : {Fore.GREEN}https://github.com/soxoj/maigret{Fore.YELLOW} -----")
+                run_maigret(args.username)
 
                 print(f"\n{Fore.YELLOW}----- Launching GitFive : {Fore.GREEN}https://github.com/mxrch/GitFive{Fore.YELLOW} -----")
                 gitfive_(args.username, "username")
-
+                
+                print(f"\n{Fore.YELLOW}----- Launching searchX github research -----")
+                githubusername(args.username)
+                
                 print(f"\n{Fore.YELLOW}----- Launching searchX research -----")
                 init_search(args.username, "username")
 
