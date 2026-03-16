@@ -113,3 +113,4 @@ python searchX.py --comb <keyword>
 - Passhunt https://github.com/Viralmaniar/Passhunt
 - .DS_Store-parser https://github.com/hanwenzhu/.DS_Store-parser
 - xeuledoc https://github.com/Malfrats/xeuledoc
+- maigret https://github.com/soxoj/maigret
