@@ -45,6 +45,7 @@ from Dependencies.cybernews import init_cybernews
 from Dependencies.whatismyIP import whatismyipAPI_DB
 from Dependencies.annuaire import annuaire_search
 from Dependencies.maigret import run_maigret
+from Dependencies.wifi_osint import searchtarget, merge_wifi_db
 
 # colorama
 from colorama import init, Fore, Style
@@ -673,6 +674,8 @@ def main():
         parser.add_argument("-usage", "--usage", action="store_true", help=f"{Fore.YELLOW}Get usages exemple{Fore.GREEN}")
         parser.add_argument("-u", "--update", action="store_true", help=f"{Fore.YELLOW}get updates{Fore.GREEN}")
         parser.add_argument('--ip',  help=f'{Fore.YELLOW}search infos through ip, domain, ... (iknowwhatyoudownload, whois, leakix, ...){Fore.GREEN}')
+        parser.add_argument('--mergewifi', action="store_true",  help=f'{Fore.YELLOW}Merge Wi-Fi DB from Wigle{Fore.GREEN}')
+        parser.add_argument('--wifi',  help=f'{Fore.YELLOW}Search for SSID or BSSID (SFR_1234,41:8b:0a:88:33:ef){Fore.GREEN}')
         parser.add_argument('--subdomain',  help=f'{Fore.YELLOW}search subdomain of a spoecific host (leakix request){Fore.GREEN}')
         parser.add_argument('--version',  help=f'{Fore.YELLOW}search webapp technologies with wappalyzer module{Fore.GREEN}')
         parser.add_argument('--comb',  help=f'{Fore.YELLOW}search through the COMB leak via an API (proxynova){Fore.GREEN}')
@@ -771,6 +774,11 @@ def main():
             print(f"{Fore.YELLOW}[!] Searching twitter(X) posts [{Fore.GREEN}{args.tweet}{Fore.YELLOW}]")
             tweetwho(args.tweet)
 
+        if args.mergewifi:
+            merge_wifi_db()
+
+        if args.wifi:
+            searchtarget(args.wifi)
 
         if args.emailfinder:
             try:
