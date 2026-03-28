@@ -35,3 +35,4 @@ brotli
 httpx[http2]
 wappalyzer
 playwright
+folium
