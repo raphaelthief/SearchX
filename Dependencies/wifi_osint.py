@@ -17,8 +17,7 @@ Y = Fore.YELLOW
 def searchtarget(query_input):
     DB_PATH = r"wigle_db.sqlite"
 
-    queries = [q.strip() for q in query_input.split(",") if q.strip()]
-
+    queries = [q.strip().lower() for q in query_input.split(",") if q.strip()]
     if not queries:
         print(f"{R}Invalid entry")
         exit()
@@ -30,7 +29,7 @@ def searchtarget(query_input):
     sql = f"""
         SELECT ssid, bssid, lastlat, lastlon, capabilities, lasttime
         FROM network
-        WHERE ssid IN ({placeholders}) OR bssid IN ({placeholders})
+        WHERE LOWER(ssid) IN ({placeholders}) OR LOWER(bssid) IN ({placeholders})
     """
     cursor.execute(sql, queries + queries)
     rows = cursor.fetchall()
