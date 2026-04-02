@@ -2617,6 +2617,26 @@ def medium(username):
     except requests.RequestException as e:
         print(f"{R}[x] medium.com")
 
+def spear_cx(username):
+    url = f"https://spear.cx/xmlhttp.php?action=get_users&query={username}"
+    try:
+        response = requests.get(url)
+        data = response.json()
+
+        if data == []:
+            print(f"{M}[-] spear.cx")
+            return
+
+        for user in data:
+            if user.get("uid") == "505":
+                print(f"{M}[-] spear.cx")
+                return
+
+        print(f"{G}[+] spear.cx")
+    except requests.RequestException:
+        print(f"{R}[x] spear.cx")
+    except ValueError:
+        print(f"{R}[x] spear.cx")
 
 
 def init_search(target, what):
@@ -2687,3 +2707,5 @@ def init_search(target, what):
         stripchat(target)
         duolingo1(target)
         medium(target)
+        spear_cx(target)
+        
