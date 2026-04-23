@@ -2,6 +2,8 @@
 # Twitter : @MalfratsInd
 # Github : https://github.com/Malfrats/xeuledoc
 
+# Added some basic features
+
 from datetime import datetime
 from pathlib import Path
 import json
@@ -101,6 +103,17 @@ def doc_hunt(doc_link, tmprinter):
         print(f"{Fore.YELLOW}Name      : {Fore.GREEN}{owner['name']}")
         print(f"{Fore.YELLOW}Email     : {Fore.GREEN}{owner['emailAddress']}")
         print(f"{Fore.YELLOW}Google ID : {Fore.GREEN}{owner['id']}")
+        
+        if owner.get("photoLink"):
+            print(f"{Fore.YELLOW}Photo URL : {Fore.GREEN}{owner['photoLink']}")
+
+
+    show_raw = input(f"\n{Fore.YELLOW}Do you want to display the full raw JSON? (y/n): {Fore.GREEN}").lower()
+
+    if show_raw in ["y", "yes"]:
+        print("\n" + json.dumps(data, indent=4, ensure_ascii=False))
+
+
 
 def drivehunt(target):
     if len(target)>1:
